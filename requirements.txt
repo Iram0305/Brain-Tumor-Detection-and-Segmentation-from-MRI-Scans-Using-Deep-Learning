@@ -2,3 +2,4 @@ streamlit
 Pillow
 numpy
 huggingface_hub
+opencv-python-headless
