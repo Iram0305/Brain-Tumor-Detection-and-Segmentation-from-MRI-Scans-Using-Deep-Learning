@@ -4,7 +4,7 @@ NeuroScan API — Powered by Hugging Face InferenceClient
 import os
 import tempfile
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 import streamlit as st
 from huggingface_hub import InferenceClient
 
@@ -33,26 +33,36 @@ def query_huggingface_sdk(file_path):
     """Use the official SDK to segment the image using a local file path."""
     client = InferenceClient(token=HF_TOKEN)
     try:
-        # Pass the local file path so the SDK can infer the Content-Type
         results = client.image_segmentation(file_path, model=MODEL_ID)
         return results
     except Exception as e:
         return {"error": str(e)}
 
-def overlay_mask(original_img, mask_pil, alpha=0.45):
-    """Overlay the PIL mask in red over the original image."""
-    mask_img = mask_pil.resize(original_img.size, Image.Resampling.NEAREST)
+def draw_boundary_overlay(original_img, mask_pil, outline_color=(255, 50, 50), fill_alpha=0.15):
+    """Draws a solid boundary around the tumor and applies a very light fill."""
+    mask_img = mask_pil.resize(original_img.size, Image.Resampling.NEAREST).convert("L")
     
     orig_np = np.array(original_img.convert("RGB"))
-    mask_np = np.array(mask_img.convert("L"))
+    mask_np = np.array(mask_img)
     
-    colored = orig_np.copy()
+    # 1. Get the solid area for a light transparent fill
     tumor_pixels = mask_np > 128 
     
+    # 2. Find the edges to create a solid boundary line
+    # FIND_EDGES creates the outline, MaxFilter(3) makes the line thicker (3px)
+    edges = mask_img.filter(ImageFilter.FIND_EDGES).filter(ImageFilter.MaxFilter(3))
+    edge_pixels = np.array(edges) > 50
+    
+    colored = orig_np.copy()
+    
+    # Apply the light transparent fill inside the tumor
     colored[tumor_pixels] = (
-        (1 - alpha) * orig_np[tumor_pixels] + 
-        alpha * np.array([255, 50, 50])
+        (1 - fill_alpha) * orig_np[tumor_pixels] + 
+        fill_alpha * np.array(outline_color)
     ).astype(np.uint8)
+    
+    # Apply the solid boundary line exactly on the edge
+    colored[edge_pixels] = outline_color
     
     return Image.fromarray(colored)
 
@@ -109,7 +119,8 @@ if uploaded_file:
                     confidence = best_mask_obj.get('score', 0.0)
                     mask_pil = best_mask_obj.get('mask')
                     
-                    overlay_img = overlay_mask(raw_img, mask_pil)
+                    # Using the new boundary drawing function
+                    overlay_img = draw_boundary_overlay(raw_img, mask_pil)
                     
                     st.markdown("<br>", unsafe_allow_html=True)
                     m1, m2 = st.columns(2)
@@ -126,7 +137,7 @@ if uploaded_file:
                         st.markdown('<p class="section-header">Raw Mask</p>', unsafe_allow_html=True)
                         st.image(mask_pil, use_container_width=True)
                     with img_col3:
-                        st.markdown('<p class="section-header">Overlay</p>', unsafe_allow_html=True)
+                        st.markdown('<p class="section-header">Boundary Overlay</p>', unsafe_allow_html=True)
                         st.image(overlay_img, use_container_width=True)
                         
                 else:
