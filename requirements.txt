@@ -1,4 +1,4 @@
 streamlit
-requests
 Pillow
 numpy
+huggingface_hub
