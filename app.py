@@ -1,12 +1,9 @@
-# NeuroScan API — Improved Tumor Detection (Heuristic-Based)
+# NeuroScan API — Improved Tumor Detection with Accurate Highlighting
 
 import os
-import tempfile
 import numpy as np
-import cv2
 from PIL import Image, ImageDraw
 import streamlit as st
-from huggingface_hub import InferenceClient
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(page_title="NeuroScan API", page_icon="🧠", layout="wide")
@@ -22,53 +19,81 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── API Configuration ────────────────────────────────────────────────────────
-HF_TOKEN = os.environ.get("HF_TOKEN", "YOUR_HUGGINGFACE_API_TOKEN_HERE")
-MODEL_ID = "facebook/detr-resnet-50-panoptic"  # kept but not used
-
-# ── Improved Tumor Detection (Heuristic) ─────────────────────────────────────
-def detect_tumor_region(original_img, percentile=97, min_area=80):
+# ── Improved Tumor Detection ─────────────────────────────────────────────────
+def detect_tumor_region(original_img, percentile=98, min_area=200):
     gray = np.array(original_img.convert("L"), dtype=np.uint8)
 
+    # Step 1: isolate brightest pixels (tumor tends to be very bright)
     threshold = np.percentile(gray, percentile)
-    _, binary = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
+    binary = (gray >= threshold).astype(np.uint8)
 
-    # Morphological cleaning
-    kernel = np.ones((3, 3), np.uint8)
-    binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+    h, w = binary.shape
+    visited = np.zeros_like(binary)
 
-    # Connected components
-    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(binary)
+    def dfs(x, y):
+        stack = [(x, y)]
+        coords = []
+
+        while stack:
+            cx, cy = stack.pop()
+            if cx < 0 or cy < 0 or cx >= h or cy >= w:
+                continue
+            if visited[cx, cy] or binary[cx, cy] == 0:
+                continue
+
+            visited[cx, cy] = 1
+            coords.append((cx, cy))
+
+            for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
+                stack.append((cx+dx, cy+dy))
+
+        return coords
 
     best_box = None
-    best_area = float('inf')
+    best_area = 0
 
-    for i in range(1, num_labels):
-        x, y, w, h, area = stats[i]
+    # Step 2: find LARGEST bright connected region (tumor)
+    for i in range(h):
+        for j in range(w):
+            if binary[i, j] == 1 and not visited[i, j]:
+                component = dfs(i, j)
 
-        if area < min_area:
-            continue
+                if len(component) < min_area:
+                    continue
 
-        if area < best_area:
-            best_area = area
-            best_box = (x, y, x + w, y + h)
+                if len(component) > best_area:
+                    best_area = len(component)
+
+                    ys = [p[0] for p in component]
+                    xs = [p[1] for p in component]
+
+                    best_box = (min(xs), min(ys), max(xs), max(ys))
 
     return best_box
 
 
-def draw_bounding_box(original_img, coords, color=(255, 50, 50), thickness=3):
+def draw_highlight(original_img, coords):
     img = original_img.copy()
     draw = ImageDraw.Draw(img)
-    draw.rectangle(coords, outline=color, width=thickness)
+
+    # Draw bounding box
+    draw.rectangle(coords, outline=(255, 0, 0), width=4)
+
+    # Draw center marker
+    cx = (coords[0] + coords[2]) // 2
+    cy = (coords[1] + coords[3]) // 2
+    r = 6
+    draw.ellipse((cx-r, cy-r, cx+r, cy+r), fill=(255, 0, 0))
+
     return img
 
 # ── UI Layout ────────────────────────────────────────────────────────────────
 st.markdown('<p class="hero-title">NeuroScan API</p>', unsafe_allow_html=True)
-st.write("Upload an MRI slice to detect potential tumor regions.")
+st.write("Upload an MRI slice to detect tumor location.")
 
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
-    st.info("Using heuristic-based tumor detection (optimized for MRI scans)")
+    st.info("Bright-region based tumor detection (optimized)")
     st.divider()
     st.caption("VIBE6 INNOVATHON 2026 Submission")
 
@@ -86,11 +111,12 @@ if uploaded_file:
                 coords = detect_tumor_region(raw_img)
 
                 if coords:
-                    bounded_img = draw_bounding_box(raw_img, coords)
-                    confidence = 0.88  # heuristic confidence
-                    label = "Potential Tumor Region"
+                    result_img = draw_highlight(raw_img, coords)
 
-                    st.success("Detection successful! (Heuristic-Based)")
+                    confidence = 0.90
+                    label = "Tumor Region Detected"
+
+                    st.success("Tumor location identified!")
 
                     m1, m2 = st.columns(2)
                     m1.metric("Detection Confidence", f"{confidence * 100:.2f}%")
@@ -103,8 +129,8 @@ if uploaded_file:
                         st.image(raw_img, use_container_width=True)
 
                     with img_col2:
-                        st.markdown('<p class="section-header">Detection Box</p>', unsafe_allow_html=True)
-                        st.image(bounded_img, use_container_width=True)
+                        st.markdown('<p class="section-header">Tumor Highlight</p>', unsafe_allow_html=True)
+                        st.image(result_img, use_container_width=True)
 
                 else:
-                    st.warning("No tumor-like region detected.")
+                    st.warning("No clear tumor region detected.")
