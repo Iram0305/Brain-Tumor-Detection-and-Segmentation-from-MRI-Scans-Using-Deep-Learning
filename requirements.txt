@@ -1,12 +1,4 @@
---extra-index-url https://download.pytorch.org/whl/cpu
-
-torch>=2.0.0
-torchvision>=0.15.0
-streamlit>=1.30.0
-numpy<2.0.0
-Pillow>=10.0.0
-nibabel>=5.0.0
-opencv-python-headless>=4.8.0
-plotly>=5.18.0
-gdown>=5.0.0
-segmentation-models-pytorch>=0.3.3
+streamlit==1.35.0
+requests==2.31.0
+Pillow==10.3.0
+numpy==1.26.4
