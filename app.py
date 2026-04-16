@@ -1,13 +1,11 @@
 """
-NeuroScan API — Powered by Hugging Face Image Segmentation
+NeuroScan API — Powered by Hugging Face InferenceClient
 """
-import io
-import base64
 import os
-import requests
 import numpy as np
 from PIL import Image
 import streamlit as st
+from huggingface_hub import InferenceClient
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(page_title="NeuroScan API", page_icon="🧠", layout="wide")
@@ -26,33 +24,29 @@ html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 # ── API Configuration ────────────────────────────────────────────────────────
 HF_TOKEN = os.environ.get("HF_TOKEN", "YOUR_HUGGINGFACE_API_TOKEN_HERE")
 
-# Using a standard Segformer model to ensure the Serverless API responds correctly.
-# Once this works, you can hunt for a medical-specific model that supports this API.
-API_URL = "https://api-inference.huggingface.co/models/nvidia/segformer-b0-finetuned-ade-512-512"
+# Using a flagship segmentation model fully supported by the new SDK
+MODEL_ID = "facebook/detr-resnet-50-panoptic"
 
 # ── Helper Functions ─────────────────────────────────────────────────────────
-def query_huggingface_api(image_bytes):
-    """Send image to Hugging Face API and gracefully handle errors."""
-    headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-    response = requests.post(API_URL, headers=headers, data=image_bytes)
-    
-    if response.status_code != 200:
-        return {"error": f"HTTP {response.status_code} Error: {response.text}"}
+def query_huggingface_sdk(image_pil):
+    """Use the official SDK to segment the image."""
+    # Initialize the client with your token
+    client = InferenceClient(token=HF_TOKEN)
     
     try:
-        return response.json()
-    except Exception:
-        return {"error": "Failed to parse API response. The model format may not be supported by the free Serverless API."}
+        # The SDK automatically handles the network requests and base64 parsing
+        results = client.image_segmentation(image_pil, model=MODEL_ID)
+        return results
+    except Exception as e:
+        return {"error": str(e)}
 
-def overlay_mask(original_img, mask_b64, alpha=0.45):
-    """Decode HF base64 mask and overlay it in red over the original image."""
-    mask_data = base64.b64decode(mask_b64)
-    mask_img = Image.open(io.BytesIO(mask_data)).convert("L")
-    
-    mask_img = mask_img.resize(original_img.size, Image.Resampling.NEAREST)
+def overlay_mask(original_img, mask_pil, alpha=0.45):
+    """Overlay the PIL mask in red over the original image."""
+    # Ensure dimensions perfectly match
+    mask_img = mask_pil.resize(original_img.size, Image.Resampling.NEAREST)
     
     orig_np = np.array(original_img.convert("RGB"))
-    mask_np = np.array(mask_img)
+    mask_np = np.array(mask_img.convert("L"))
     
     colored = orig_np.copy()
     tumor_pixels = mask_np > 128 
@@ -66,48 +60,49 @@ def overlay_mask(original_img, mask_b64, alpha=0.45):
 
 # ── UI Layout ────────────────────────────────────────────────────────────────
 st.markdown('<p class="hero-title">NeuroScan API</p>', unsafe_allow_html=True)
-st.write("Upload an MRI slice to generate a segmentation mask using Hugging Face.")
+st.write("Upload an MRI slice to generate a segmentation mask using the Hugging Face SDK.")
 
 # Sidebar
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
-    st.info(f"**Model Endpoint:**\n`{API_URL.split('/')[-1]}`")
-    st.caption("Using Hugging Face Serverless Inference API.")
+    st.info(f"**Model Endpoint:**\n`{MODEL_ID}`")
+    st.caption("Using official `huggingface_hub` InferenceClient.")
     st.divider()
-    st.caption("VIBE6 INNOVATHON 2026 Submission")
 
 # Main window
 uploaded_file = st.file_uploader("Upload MRI Image", type=["png", "jpg", "jpeg"])
 
 if uploaded_file:
-    raw_img = Image.open(uploaded_file)
+    # Convert upload to a standard PIL Image immediately
+    raw_img = Image.open(uploaded_file).convert("RGB")
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("🔍 Segment MRI via Hugging Face"):
-            with st.spinner("Calling Hugging Face API..."):
-                image_bytes = uploaded_file.getvalue()
-                result = query_huggingface_api(image_bytes)
+            
+            if HF_TOKEN == "YOUR_HUGGINGFACE_API_TOKEN_HERE":
+                st.error("⚠️ **Missing Token:** Please set your Hugging Face token in the code or Streamlit Secrets!")
+                st.stop()
                 
+            with st.spinner("Analyzing via Hugging Face SDK..."):
+                result = query_huggingface_sdk(raw_img)
+                
+                # Check for our custom error dictionary
                 if isinstance(result, dict) and "error" in result:
-                    if "currently loading" in result["error"].lower():
-                        st.warning("⏳ **Model is waking up!** Please wait 20 seconds and click the button again.")
-                    else:
-                        st.error(result["error"])
+                    st.error(f"API Error: {result['error']}")
                 
+                # If successful, the SDK returns a list of dictionaries
                 elif isinstance(result, list) and len(result) > 0:
                     st.success("Segmentation successful!")
                     
+                    # Grab the highest-confidence mask
                     best_mask_obj = result[0] 
                     confidence = best_mask_obj.get('score', 0.0)
-                    mask_b64 = best_mask_obj.get('mask')
                     
-                    if not mask_b64:
-                        st.error("API returned a successful response, but no image mask data was found.")
-                        st.stop()
-                        
-                    overlay_img = overlay_mask(raw_img, mask_b64)
-                    mask_only_img = Image.open(io.BytesIO(base64.b64decode(mask_b64)))
+                    # The SDK is great because it automatically converts the payload into a PIL image
+                    mask_pil = best_mask_obj.get('mask')
+                    
+                    overlay_img = overlay_mask(raw_img, mask_pil)
                     
                     st.markdown("<br>", unsafe_allow_html=True)
                     m1, m2 = st.columns(2)
@@ -122,10 +117,10 @@ if uploaded_file:
                         st.image(raw_img, use_container_width=True)
                     with img_col2:
                         st.markdown('<p class="section-header">Raw Mask</p>', unsafe_allow_html=True)
-                        st.image(mask_only_img, use_container_width=True)
+                        st.image(mask_pil, use_container_width=True)
                     with img_col3:
                         st.markdown('<p class="section-header">Overlay</p>', unsafe_allow_html=True)
                         st.image(overlay_img, use_container_width=True)
                         
                 else:
-                    st.info("No regions detected by the model, or invalid response format.")
+                    st.info("No regions detected by the model.")
