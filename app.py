@@ -28,21 +28,19 @@ HF_TOKEN = os.environ.get("HF_TOKEN", "YOUR_HUGGINGFACE_API_TOKEN_HERE")
 MODEL_ID = "facebook/detr-resnet-50-panoptic"
 
 # ── Helper Functions ─────────────────────────────────────────────────────────
-def query_huggingface_sdk(image_pil):
-    """Use the official SDK to segment the image."""
-    # Initialize the client with your token
+def query_huggingface_sdk(image_bytes):
+    """Use the official SDK to segment the image using binary data."""
     client = InferenceClient(token=HF_TOKEN)
     
     try:
-        # The SDK automatically handles the network requests and base64 parsing
-        results = client.image_segmentation(image_pil, model=MODEL_ID)
+        # Pass the raw binary data (bytes) to the SDK
+        results = client.image_segmentation(image_bytes, model=MODEL_ID)
         return results
     except Exception as e:
         return {"error": str(e)}
 
 def overlay_mask(original_img, mask_pil, alpha=0.45):
     """Overlay the PIL mask in red over the original image."""
-    # Ensure dimensions perfectly match
     mask_img = mask_pil.resize(original_img.size, Image.Resampling.NEAREST)
     
     orig_np = np.array(original_img.convert("RGB"))
@@ -73,7 +71,10 @@ with st.sidebar:
 uploaded_file = st.file_uploader("Upload MRI Image", type=["png", "jpg", "jpeg"])
 
 if uploaded_file:
-    # Convert upload to a standard PIL Image immediately
+    # 1. Save the raw binary data for the API
+    image_bytes = uploaded_file.getvalue()
+    
+    # 2. Convert to PIL for displaying in the Streamlit UI
     raw_img = Image.open(uploaded_file).convert("RGB")
     
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -85,21 +86,17 @@ if uploaded_file:
                 st.stop()
                 
             with st.spinner("Analyzing via Hugging Face SDK..."):
-                result = query_huggingface_sdk(raw_img)
+                # Pass the binary bytes, NOT the PIL image
+                result = query_huggingface_sdk(image_bytes)
                 
-                # Check for our custom error dictionary
                 if isinstance(result, dict) and "error" in result:
                     st.error(f"API Error: {result['error']}")
                 
-                # If successful, the SDK returns a list of dictionaries
                 elif isinstance(result, list) and len(result) > 0:
                     st.success("Segmentation successful!")
                     
-                    # Grab the highest-confidence mask
                     best_mask_obj = result[0] 
                     confidence = best_mask_obj.get('score', 0.0)
-                    
-                    # The SDK is great because it automatically converts the payload into a PIL image
                     mask_pil = best_mask_obj.get('mask')
                     
                     overlay_img = overlay_mask(raw_img, mask_pil)
