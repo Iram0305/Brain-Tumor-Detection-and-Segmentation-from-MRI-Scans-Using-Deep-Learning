@@ -2,6 +2,7 @@
 NeuroScan API — Powered by Hugging Face InferenceClient
 """
 import os
+import tempfile
 import numpy as np
 from PIL import Image
 import streamlit as st
@@ -28,13 +29,12 @@ HF_TOKEN = os.environ.get("HF_TOKEN", "YOUR_HUGGINGFACE_API_TOKEN_HERE")
 MODEL_ID = "facebook/detr-resnet-50-panoptic"
 
 # ── Helper Functions ─────────────────────────────────────────────────────────
-def query_huggingface_sdk(image_bytes):
-    """Use the official SDK to segment the image using binary data."""
+def query_huggingface_sdk(file_path):
+    """Use the official SDK to segment the image using a local file path."""
     client = InferenceClient(token=HF_TOKEN)
-    
     try:
-        # Pass the raw binary data (bytes) to the SDK
-        results = client.image_segmentation(image_bytes, model=MODEL_ID)
+        # Pass the local file path so the SDK can infer the Content-Type
+        results = client.image_segmentation(file_path, model=MODEL_ID)
         return results
     except Exception as e:
         return {"error": str(e)}
@@ -71,10 +71,7 @@ with st.sidebar:
 uploaded_file = st.file_uploader("Upload MRI Image", type=["png", "jpg", "jpeg"])
 
 if uploaded_file:
-    # 1. Save the raw binary data for the API
-    image_bytes = uploaded_file.getvalue()
-    
-    # 2. Convert to PIL for displaying in the Streamlit UI
+    # Convert upload to a standard PIL Image for the UI and saving
     raw_img = Image.open(uploaded_file).convert("RGB")
     
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -86,12 +83,25 @@ if uploaded_file:
                 st.stop()
                 
             with st.spinner("Analyzing via Hugging Face SDK..."):
-                # Pass the binary bytes, NOT the PIL image
-                result = query_huggingface_sdk(image_bytes)
                 
+                # Create a secure temporary file to bypass the Content-Type error
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp_file:
+                    raw_img.save(tmp_file, format="JPEG")
+                    temp_path = tmp_file.name
+                
+                try:
+                    # Pass the LOCAL PATH to the SDK
+                    result = query_huggingface_sdk(temp_path)
+                finally:
+                    # Always clean up the temp file so your server doesn't run out of storage
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
+                
+                # Handle API Errors
                 if isinstance(result, dict) and "error" in result:
                     st.error(f"API Error: {result['error']}")
                 
+                # Handle Success
                 elif isinstance(result, list) and len(result) > 0:
                     st.success("Segmentation successful!")
                     
