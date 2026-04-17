@@ -1,5 +1,5 @@
 # NeuroScan — Brain MRI Anomaly Detection
-# UI v4.1: High-Legibility Dashboard · Clickable Explanations · Fixed Sidebar Toggle
+# UI v4.2: High-Legibility Dashboard · Clickable Explanations · Fixed Sidebar · White Badge Text
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
@@ -151,7 +151,7 @@ html, body, [class*="css"] {
 .badge-detected {
     background: var(--red-dim);
     border: 2px solid var(--red);
-    color: #FFA3B8;
+    color: var(--text-pri); /* Changed to pure white for maximum legibility */
 }
 .badge-clear {
     background: var(--green-dim);
