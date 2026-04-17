@@ -1,5 +1,5 @@
 # NeuroScan — Brain MRI Anomaly Detection
-# UI v4.0: Netflix-Style · Large Readable Text · Clickable Info Panels
+# UI v5.0: Cohesive Medical-Green · Netflix Energy · One Unified Design System
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
@@ -19,7 +19,6 @@ from matplotlib.colors import LinearSegmentedColormap
 import io
 import time
 
-# ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="NeuroScan · AI MRI Analysis",
     page_icon="🧠",
@@ -27,524 +26,689 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Netflix-Style CSS ─────────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+#  DESIGN SYSTEM — Medical Green · Unified · Netflix Energy
+# ══════════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800&display=swap');
 
+/* ── TOKENS ── */
 :root {
-    --bg-base:       #141414;
-    --bg-card:       #1f1f1f;
-    --bg-elevated:   #2a2a2a;
-    --bg-hover:      #333333;
-    --border:        #333333;
-    --border-bright: #555555;
-    --red:           #E50914;
-    --red-hover:     #F40612;
-    --red-soft:      rgba(229,9,20,0.15);
-    --red-border:    rgba(229,9,20,0.4);
-    --white:         #FFFFFF;
-    --off-white:     #E5E5E5;
-    --grey-light:    #B3B3B3;
-    --grey-mid:      #808080;
-    --grey-dark:     #4a4a4a;
-    --green:         #46D369;
-    --green-soft:    rgba(70,211,105,0.15);
-    --amber:         #F5A623;
-    --amber-soft:    rgba(245,166,35,0.15);
-    --cyan:          #00B4D8;
-    --cyan-soft:     rgba(0,180,216,0.15);
-    --radius:        8px;
-    --radius-lg:     12px;
+    --g900: #0a1a0f;
+    --g800: #0d2116;
+    --g700: #112b1c;
+    --g600: #163522;
+    --g500: #1c4a2e;
+    --g400: #1f5c36;
+    --g300: #246b3e;
+    --accent: #22c55e;
+    --accent-dim: rgba(34,197,94,0.12);
+    --accent-glow: rgba(34,197,94,0.25);
+    --accent-border: rgba(34,197,94,0.35);
+    --accent-hover: #16a34a;
+    --surface: #0f1a14;
+    --surface-2: #141f18;
+    --surface-3: #192519;
+    --surface-4: #1e2c1e;
+    --border-subtle: rgba(34,197,94,0.10);
+    --border-mid:    rgba(34,197,94,0.20);
+    --border-strong: rgba(34,197,94,0.35);
+    --text-primary:  #f0fdf4;
+    --text-secondary:#86efac;
+    --text-muted:    #4ade80;
+    --text-dim:      rgba(134,239,172,0.5);
+    --white:         #ffffff;
+    --amber:         #f59e0b;
+    --amber-soft:    rgba(245,158,11,0.12);
+    --amber-border:  rgba(245,158,11,0.3);
+    --red:           #ef4444;
+    --red-soft:      rgba(239,68,68,0.12);
+    --red-border:    rgba(239,68,68,0.3);
+    --radius-sm:     6px;
+    --radius:        10px;
+    --radius-lg:     14px;
+    --radius-xl:     20px;
+    --shadow:        0 4px 24px rgba(0,0,0,0.5);
+    --shadow-glow:   0 0 32px rgba(34,197,94,0.12);
 }
 
-html, body, [class*="css"] {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: var(--bg-base) !important;
-    color: var(--off-white) !important;
+/* ── BASE ── */
+html, body, [class*="css"], .stApp {
+    font-family: 'DM Sans', system-ui, sans-serif !important;
+    background-color: var(--surface) !important;
+    color: var(--text-primary) !important;
 }
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-base); }
-::-webkit-scrollbar-thumb { background: var(--grey-dark); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--grey-mid); }
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--g400); border-radius: 3px; }
 
-/* ══════════ HERO ══════════ */
-.nf-hero {
-    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, var(--bg-base) 100%),
-                linear-gradient(135deg, #1a0000 0%, #141414 40%, #0a0a1a 100%);
-    padding: 3.5rem 0 2.5rem;
-    margin-bottom: 2rem;
-    border-bottom: 3px solid var(--red);
+/* ════════════════════════════
+   HERO — full cinematic band
+   ════════════════════════════ */
+.ns-hero {
+    background:
+        linear-gradient(180deg, var(--g800) 0%, var(--surface) 100%);
+    border-bottom: 1px solid var(--border-mid);
+    padding: 3.5rem 2rem 2.5rem;
+    margin: -0.5rem -1rem 2.5rem;
     position: relative;
     overflow: hidden;
 }
-.nf-hero::before {
+.ns-hero::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background:
-        radial-gradient(ellipse 60% 80% at 10% 50%, rgba(229,9,20,0.08) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 60% at 90% 30%, rgba(0,180,216,0.05) 0%, transparent 60%);
+    inset: 0;
+    background-image:
+        radial-gradient(ellipse 70% 120% at 5% 60%, rgba(34,197,94,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 80% at 95% 20%, rgba(34,197,94,0.04) 0%, transparent 55%);
     pointer-events: none;
 }
-.nf-logo {
-    font-family: 'Bebas Neue', 'Inter', sans-serif;
-    font-size: clamp(3rem, 8vw, 6rem);
-    color: var(--red);
-    letter-spacing: 0.04em;
-    line-height: 1;
-    margin: 0;
-    text-shadow: 0 0 40px rgba(229,9,20,0.4);
+.ns-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(34,197,94,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34,197,94,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
 }
-.nf-logo span {
-    color: var(--white);
+.ns-hero-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
 }
-.nf-tagline {
-    font-size: clamp(1rem, 2vw, 1.2rem);
-    color: var(--grey-light);
-    margin-top: 0.75rem;
+.ns-hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+}
+.ns-hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin: 0 0 1rem;
+    position: relative;
+    z-index: 1;
+}
+.ns-hero-title .hi {
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(34,197,94,0.4);
+}
+.ns-hero-desc {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    max-width: 580px;
     font-weight: 400;
-    line-height: 1.6;
-    max-width: 620px;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1.5rem;
 }
-.nf-badges {
+.ns-badge-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: 1.25rem;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
 }
-.nf-badge {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 4px;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.85rem;
-    color: var(--grey-light);
-    font-weight: 500;
-    letter-spacing: 0.02em;
+.ns-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.85rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid var(--border-mid);
+    background: var(--accent-dim);
+    color: var(--text-secondary);
+    letter-spacing: 0.01em;
 }
-.nf-badge.red {
-    background: var(--red-soft);
-    border-color: var(--red-border);
-    color: #ff6b6b;
+.ns-badge.warn {
+    border-color: var(--amber-border);
+    background: var(--amber-soft);
+    color: var(--amber);
 }
 
-/* ══════════ SECTION HEADERS ══════════ */
-.nf-section-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--white);
-    margin: 1.5rem 0 0.75rem;
-    letter-spacing: -0.01em;
+/* ════════════════════════════
+   SECTION HEADER
+   ════════════════════════════ */
+.ns-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 2rem 0 1.1rem;
 }
-.nf-section-title .red-bar {
-    display: inline-block;
+.ns-section-bar {
     width: 4px;
-    height: 1.4rem;
-    background: var(--red);
+    height: 1.6rem;
+    background: var(--accent);
     border-radius: 2px;
-    margin-right: 0.6rem;
-    vertical-align: middle;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+.ns-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    margin: 0;
 }
 
-/* ══════════ INFO CARDS (replaces tooltips) ══════════ */
-.info-panel {
-    background: var(--bg-card);
-    border: 1px solid var(--border-bright);
-    border-left: 4px solid var(--cyan);
+/* ════════════════════════════
+   INFO CARDS — replaces every tooltip
+   ════════════════════════════ */
+.ns-info {
+    background: var(--surface-3);
+    border: 1px solid var(--border-mid);
+    border-left: 3px solid var(--accent);
     border-radius: var(--radius);
-    padding: 1.1rem 1.3rem;
+    padding: 1.15rem 1.4rem;
     margin: 0.75rem 0 1.25rem;
     font-size: 1rem;
-    color: var(--off-white);
-    line-height: 1.7;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    animation: fadeUp 0.3s ease both;
 }
-.info-panel strong {
-    color: var(--white);
-    font-weight: 700;
+.ns-info strong { color: var(--text-primary); font-weight: 700; }
+.ns-info em { color: var(--accent); font-style: normal; font-weight: 600; }
+.ns-info.amber {
+    border-left-color: var(--amber);
+    background: rgba(245,158,11,0.06);
+    color: rgba(253,230,138,0.85);
 }
-.info-panel.red-accent  { border-left-color: var(--red);   }
-.info-panel.green-accent{ border-left-color: var(--green); }
-.info-panel.amber-accent{ border-left-color: var(--amber); }
-.warn-panel {
-    background: rgba(245,166,35,0.1);
-    border: 1px solid rgba(245,166,35,0.35);
-    border-left: 4px solid var(--amber);
-    border-radius: var(--radius);
-    padding: 1.1rem 1.3rem;
-    margin: 0.75rem 0;
-    font-size: 1rem;
-    color: var(--off-white);
-    line-height: 1.7;
+.ns-info.amber strong { color: var(--amber); }
+.ns-info.red {
+    border-left-color: var(--red);
+    background: var(--red-soft);
+    color: rgba(252,165,165,0.9);
 }
-.warn-panel strong { color: var(--amber); font-weight: 700; }
+.ns-info.red strong { color: var(--red); }
 
-/* ══════════ DETECTION BADGES ══════════ */
-.detect-badge-wrap {
+/* ════════════════════════════
+   METRIC CARDS
+   ════════════════════════════ */
+.ns-metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0;
+}
+.ns-metric {
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.6rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
+    animation: fadeUp 0.4s ease both;
+    cursor: default;
+}
+.ns-metric:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow);
+}
+.ns-metric::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.6;
+}
+.ns-metric.amber::before { background: var(--amber); }
+.ns-metric.red::before   { background: var(--red); }
+.ns-metric.white::before { background: var(--text-secondary); }
+.ns-metric-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    margin-bottom: 0.6rem;
+}
+.ns-metric-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.02em;
+}
+.ns-metric.amber .ns-metric-value { color: var(--amber); }
+.ns-metric.red   .ns-metric-value { color: var(--red); }
+.ns-metric.white .ns-metric-value { color: var(--text-primary); }
+.ns-metric-desc {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+}
+.ns-conf-track {
+    height: 5px;
+    background: var(--surface-4);
+    border-radius: 100px;
+    margin: 0.7rem 0 0.4rem;
+    overflow: hidden;
+}
+.ns-conf-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, var(--accent-hover), var(--accent));
+    animation: growBar 1.2s cubic-bezier(0.25,1,0.5,1) both;
+}
+@keyframes growBar { from { width: 0 !important; } }
+
+/* ════════════════════════════
+   DETECTION BADGES
+   ════════════════════════════ */
+.ns-result-row {
     display: flex;
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
     margin: 1.5rem 0 1rem;
 }
-.nf-detect-badge {
+.ns-detect {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.5rem;
-    border-radius: 6px;
+    gap: 0.55rem;
+    padding: 0.65rem 1.6rem;
+    border-radius: var(--radius);
     font-size: 1.05rem;
     font-weight: 800;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
+    animation: badgePop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
 }
-.badge-anomaly {
+.ns-detect.found {
     background: var(--red-soft);
-    border: 2px solid var(--red);
-    color: #ff4757;
+    border: 2px solid var(--red-border);
+    color: #fca5a5;
 }
-.badge-clear {
-    background: var(--green-soft);
-    border: 2px solid var(--green);
-    color: var(--green);
+.ns-detect.clear {
+    background: var(--accent-dim);
+    border: 2px solid var(--accent-border);
+    color: var(--accent);
 }
-.pulse-dot {
+.ns-risk {
+    display: inline-block;
+    padding: 0.45rem 1.1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    animation: badgePop 0.5s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.ns-risk.high   { background: var(--red-soft);   border: 1px solid var(--red-border);   color: #fca5a5; }
+.ns-risk.medium { background: var(--amber-soft); border: 1px solid var(--amber-border); color: var(--amber); }
+.ns-risk.low    { background: var(--accent-dim); border: 1px solid var(--accent-border);color: var(--accent); }
+
+/* pulse dot */
+.pdot {
     width: 9px; height: 9px;
     border-radius: 50%;
     background: currentColor;
-    animation: pulseDot 1.4s ease-in-out infinite;
+    animation: pdotAnim 1.5s ease infinite;
+    flex-shrink: 0;
 }
-.risk-pill {
-    display: inline-block;
-    padding: 0.4rem 1rem;
-    border-radius: 4px;
-    font-size: 0.95rem;
+@keyframes pdotAnim {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.3; transform:scale(0.6); }
+}
+
+/* ════════════════════════════
+   IMAGE LABELS
+   ════════════════════════════ */
+.ns-img-label {
+    font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
-.risk-high   { background: var(--red-soft);   border: 1px solid var(--red);   color: #ff4757; }
-.risk-medium { background: var(--amber-soft); border: 1px solid var(--amber); color: var(--amber); }
-.risk-low    { background: var(--green-soft); border: 1px solid var(--green); color: var(--green); }
-
-/* ══════════ METRIC CARDS (Netflix content cards style) ══════════ */
-.metric-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin: 1.25rem 0;
-}
-.metric-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.4rem 1.5rem;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s, transform 0.15s;
-}
-.metric-card:hover { border-color: var(--border-bright); transform: translateY(-2px); }
-.metric-card::after {
+.ns-img-label::after {
     content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 3px;
-}
-.metric-card.mc-red::after    { background: var(--red); }
-.metric-card.mc-green::after  { background: var(--green); }
-.metric-card.mc-amber::after  { background: var(--amber); }
-.metric-card.mc-cyan::after   { background: var(--cyan); }
-
-.metric-card-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--grey-mid);
-    margin-bottom: 0.5rem;
-}
-.metric-card-value {
-    font-size: 2.2rem;
-    font-weight: 900;
-    line-height: 1;
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.02em;
-}
-.mc-red   .metric-card-value { color: #ff4757; }
-.mc-green .metric-card-value { color: var(--green); }
-.mc-amber .metric-card-value { color: var(--amber); }
-.mc-cyan  .metric-card-value { color: var(--cyan); }
-.metric-card-explain {
-    font-size: 0.9rem;
-    color: var(--grey-light);
-    line-height: 1.55;
-    margin-top: 0.4rem;
-}
-.conf-bar-bg {
-    background: var(--bg-elevated);
-    border-radius: 100px;
-    height: 6px;
-    margin-top: 0.7rem;
-    overflow: hidden;
-}
-.conf-bar-fill {
-    height: 100%;
-    border-radius: 100px;
-    background: linear-gradient(90deg, var(--red), var(--amber));
-    animation: growBar 1s ease both;
+    flex: 1;
+    height: 1px;
+    background: var(--border-subtle);
 }
 
-/* ══════════ TABS ══════════ */
+/* ════════════════════════════
+   TABS
+   ════════════════════════════ */
 .stTabs [data-baseweb="tab-list"] {
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border);
-    gap: 0;
-    border-radius: var(--radius) var(--radius) 0 0;
+    background: var(--surface-2) !important;
+    border-bottom: 1px solid var(--border-mid) !important;
+    gap: 0 !important;
+    border-radius: var(--radius) var(--radius) 0 0 !important;
+    padding: 0 0.5rem !important;
 }
 .stTabs [data-baseweb="tab"] {
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--grey-mid) !important;
-    padding: 0.9rem 1.75rem;
-    border-radius: 0;
-    border-bottom: 3px solid transparent;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: var(--text-dim) !important;
+    padding: 0.85rem 1.5rem !important;
+    border-radius: 0 !important;
+    border-bottom: 3px solid transparent !important;
+    background: transparent !important;
+    transition: color 0.2s !important;
 }
 .stTabs [aria-selected="true"] {
-    color: var(--white) !important;
-    border-bottom: 3px solid var(--red) !important;
-    background: transparent;
+    color: var(--accent) !important;
+    border-bottom: 3px solid var(--accent) !important;
 }
 .stTabs [data-baseweb="tab-panel"] {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 var(--radius) var(--radius);
-    padding: 1.5rem;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--border-mid) !important;
+    border-top: none !important;
+    border-radius: 0 0 var(--radius) var(--radius) !important;
+    padding: 1.75rem !important;
 }
 
-/* ══════════ IMAGE LABELS ══════════ */
-.img-label {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--white);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 0.6rem;
-    display: block;
-}
-
-/* ══════════ PIPELINE STEPS ══════════ */
-.pipeline-wrap { display: flex; flex-direction: column; gap: 0; }
-.pipeline-step {
+/* ════════════════════════════
+   PIPELINE STEPS
+   ════════════════════════════ */
+.pipeline-wrap { display: flex; flex-direction: column; }
+.pipe-step {
     display: flex;
-    gap: 1.2rem;
-    padding: 1rem 1.1rem;
-    border-radius: var(--radius);
+    gap: 1.1rem;
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius-sm);
     position: relative;
+    align-items: flex-start;
 }
-.pipeline-step:not(:last-child)::after {
+.pipe-step:not(:last-child)::after {
     content: '';
     position: absolute;
-    left: 1.6rem;
+    left: 1.45rem;
     top: 100%;
     width: 2px;
-    height: 8px;
-    background: var(--border-bright);
+    height: 10px;
+    background: var(--border-subtle);
 }
-.step-dot-done   { width: 11px; height: 11px; border-radius: 50%; background: var(--green); flex-shrink: 0; margin-top: 3px; }
-.step-dot-active { width: 11px; height: 11px; border-radius: 50%; background: var(--red); animation: pulseDot 1s ease infinite; box-shadow: 0 0 10px rgba(229,9,20,0.6); flex-shrink: 0; margin-top: 3px; }
-.step-dot-wait   { width: 11px; height: 11px; border-radius: 50%; background: var(--border-bright); flex-shrink: 0; margin-top: 3px; }
-.step-active-bg { background: rgba(229,9,20,0.05); border: 1px solid rgba(229,9,20,0.15); }
-.step-done-bg   { background: transparent; }
-.step-title-done   { font-size: 1rem; font-weight: 600; color: var(--green); opacity: 0.85; }
-.step-title-active { font-size: 1rem; font-weight: 700; color: var(--white); }
-.step-title-wait   { font-size: 1rem; font-weight: 500; color: var(--grey-dark); }
-.step-detail { font-size: 0.92rem; color: var(--grey-light); margin-top: 0.3rem; line-height: 1.6; }
+.pdot-done   { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 4px; }
+.pdot-active { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); animation: pdotAnim 0.9s ease infinite; box-shadow: 0 0 10px var(--accent-glow); flex-shrink: 0; margin-top: 4px; }
+.pdot-wait   { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--border-mid); flex-shrink: 0; margin-top: 4px; }
+.pipe-active { background: var(--accent-dim); border: 1px solid var(--accent-border); }
+.pipe-title-done   { font-size: 0.97rem; font-weight: 600; color: var(--accent); }
+.pipe-title-active { font-size: 0.97rem; font-weight: 700; color: var(--text-primary); }
+.pipe-title-wait   { font-size: 0.97rem; font-weight: 500; color: var(--text-dim); }
+.pipe-detail { font-size: 0.88rem; color: var(--text-secondary); margin-top: 0.3rem; line-height: 1.65; opacity: 0.85; }
 
-/* ══════════ CLINICAL REPORT TABLE ══════════ */
-.report-wrap {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
+/* ════════════════════════════
+   CLINICAL REPORT
+   ════════════════════════════ */
+.ns-report {
+    background: var(--surface-2);
+    border: 1px solid var(--border-mid);
     border-radius: var(--radius-lg);
     overflow: hidden;
     margin-top: 1.5rem;
+    box-shadow: var(--shadow);
 }
-.report-title-bar {
-    background: var(--red);
-    padding: 1rem 1.5rem;
+.ns-report-header {
+    background: linear-gradient(135deg, var(--g500), var(--g400));
+    border-bottom: 1px solid var(--accent-border);
+    padding: 1.15rem 1.75rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 0.5rem;
 }
-.report-title-text {
-    font-size: 1.25rem;
+.ns-report-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
     font-weight: 800;
-    color: var(--white);
-    letter-spacing: 0.02em;
+    color: var(--text-primary);
+    letter-spacing: 0.01em;
     text-transform: uppercase;
 }
-.report-meta-text {
-    font-size: 0.82rem;
-    color: rgba(255,255,255,0.75);
+.ns-report-meta {
+    font-size: 0.8rem;
+    color: var(--text-dim);
     font-weight: 500;
+    letter-spacing: 0.04em;
 }
-.finding-row {
+.ns-row {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    gap: 1.5rem;
+    padding: 1rem 1.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+    gap: 2rem;
     flex-wrap: wrap;
+    transition: background 0.15s;
 }
-.finding-row:last-child { border-bottom: none; }
-.finding-row:nth-child(even) { background: rgba(255,255,255,0.02); }
-.finding-key {
+.ns-row:hover { background: rgba(34,197,94,0.03); }
+.ns-row:last-child { border-bottom: none; }
+.ns-row-key {
     font-size: 1rem;
     font-weight: 700;
-    color: var(--white);
+    color: var(--text-primary);
     margin-bottom: 0.3rem;
 }
-.finding-explain {
-    font-size: 0.9rem;
-    color: var(--grey-light);
-    line-height: 1.55;
+.ns-row-explain {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+    max-width: 500px;
 }
-.finding-val {
-    font-size: 1.05rem;
+.ns-row-val {
+    font-size: 1rem;
     font-weight: 700;
-    color: var(--off-white);
+    color: var(--text-primary);
     text-align: right;
     flex-shrink: 0;
-    min-width: 120px;
+    min-width: 130px;
+    font-variant-numeric: tabular-nums;
 }
 
-/* ══════════ SIDEBAR ══════════ */
+/* ════════════════════════════
+   SIDEBAR
+   ════════════════════════════ */
 section[data-testid="stSidebar"] {
-    background: #0d0d0d !important;
-    border-right: 1px solid var(--border) !important;
+    background: var(--g900) !important;
+    border-right: 1px solid var(--border-subtle) !important;
 }
-section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] * {
+    color: var(--text-primary) !important;
+}
 section[data-testid="stSidebar"] label,
-section[data-testid="stSidebar"] .stMarkdown,
-section[data-testid="stSidebar"] span,
-section[data-testid="stSidebar"] div {
-    color: var(--off-white) !important;
-    font-size: 1rem !important;
+section[data-testid="stSidebar"] p {
+    font-size: 0.97rem !important;
+    font-family: 'DM Sans', sans-serif !important;
 }
-.sidebar-heading {
-    font-size: 1.1rem;
+.sb-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
     font-weight: 800;
-    color: var(--white);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    border-bottom: 2px solid var(--red);
-    padding-bottom: 0.5rem;
-    margin: 1.2rem 0 1rem;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    padding: 1rem 0 0.25rem;
 }
-.sidebar-algo-step {
+.sb-logo span { color: var(--accent); }
+.sb-rule {
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent-border), transparent);
+    margin: 0.5rem 0 1.25rem;
+}
+.sb-heading {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 1.5rem 0 0.9rem;
     display: flex;
-    gap: 0.85rem;
-    margin-bottom: 1rem;
+    align-items: center;
+    gap: 0.5rem;
+}
+.sb-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-subtle);
+}
+.sb-mode-card {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    border-radius: var(--radius);
+    padding: 1rem 1.1rem;
+    margin: 0.5rem 0 1rem;
+}
+.sb-mode-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+}
+.sb-mode-body {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+.sb-algo-step {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 0.95rem;
     align-items: flex-start;
 }
-.sidebar-num {
-    font-size: 0.75rem;
+.sb-num {
+    font-size: 0.7rem;
     font-weight: 800;
-    color: var(--red);
-    background: var(--red-soft);
-    border: 1px solid var(--red-border);
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
     border-radius: 4px;
-    padding: 0.15rem 0.45rem;
+    padding: 0.1rem 0.45rem;
     flex-shrink: 0;
     margin-top: 2px;
     min-width: 28px;
     text-align: center;
 }
-.sidebar-algo-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--white);
-    margin-bottom: 0.2rem;
-}
-.sidebar-algo-text {
+.sb-algo-title { font-size: 0.92rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.15rem; }
+.sb-algo-body  { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; }
+.sb-option-card {
+    background: var(--surface-3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    margin: 0.4rem 0 0.5rem;
     font-size: 0.88rem;
-    color: var(--grey-light);
-    line-height: 1.55;
+    color: var(--text-secondary);
+    line-height: 1.6;
 }
 
-/* ══════════ BUTTONS ══════════ */
+/* ════════════════════════════
+   BUTTONS
+   ════════════════════════════ */
 .stButton { display: flex; justify-content: center; }
 .stButton > button {
-    background: var(--red) !important;
+    background: var(--accent) !important;
     border: none !important;
     border-radius: var(--radius) !important;
-    color: var(--white) !important;
+    color: #052e10 !important;
     font-weight: 800 !important;
-    font-family: 'Inter', sans-serif !important;
+    font-family: 'DM Sans', sans-serif !important;
     font-size: 1.1rem !important;
-    letter-spacing: 0.04em !important;
-    padding: 0.85rem 3rem !important;
-    min-width: 220px !important;
+    letter-spacing: 0.03em !important;
+    padding: 0.9rem 3.2rem !important;
+    min-width: 240px !important;
     text-transform: uppercase !important;
     transition: background 0.2s, transform 0.15s, box-shadow 0.2s !important;
-    box-shadow: 0 4px 20px rgba(229,9,20,0.35) !important;
+    box-shadow: 0 4px 20px var(--accent-glow) !important;
 }
 .stButton > button:hover {
-    background: var(--red-hover) !important;
+    background: #16a34a !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 6px 28px rgba(229,9,20,0.5) !important;
+    box-shadow: 0 6px 30px var(--accent-glow) !important;
 }
+.stButton > button:active { transform: translateY(0) !important; }
 
-/* ══════════ FILE UPLOADER ══════════ */
+/* ════════════════════════════
+   FILE UPLOADER
+   ════════════════════════════ */
 [data-testid="stFileUploader"] {
-    background: var(--bg-card) !important;
-    border: 2px dashed var(--border-bright) !important;
+    background: var(--surface-3) !important;
+    border: 2px dashed var(--border-mid) !important;
     border-radius: var(--radius-lg) !important;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background 0.2s;
 }
-[data-testid="stFileUploader"]:hover { border-color: var(--red) !important; }
-[data-testid="stFileUploader"] label,
-[data-testid="stFileUploader"] p,
-[data-testid="stFileUploader"] span { font-size: 1rem !important; color: var(--grey-light) !important; }
-
-/* ══════════ SLIDER ══════════ */
-.stSlider > div > div > div { background: var(--grey-dark) !important; }
-.stSlider > div > div > div > div { background: var(--red) !important; }
-.stSlider label { font-size: 1rem !important; font-weight: 600 !important; color: var(--white) !important; }
-
-/* ══════════ CHECKBOX ══════════ */
-.stCheckbox label { font-size: 1rem !important; color: var(--off-white) !important; }
-
-/* ══════════ ANIMATIONS ══════════ */
-@keyframes pulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.35; transform: scale(0.65); }
+[data-testid="stFileUploader"]:hover {
+    border-color: var(--accent-border) !important;
+    background: var(--accent-dim) !important;
 }
-@keyframes growBar {
-    from { width: 0 !important; }
+[data-testid="stFileUploader"] label { font-size: 1rem !important; font-weight: 600 !important; }
+
+/* ════════════════════════════
+   SLIDER
+   ════════════════════════════ */
+.stSlider > div > div > div { background: var(--border-mid) !important; }
+.stSlider > div > div > div > div { background: var(--accent) !important; }
+.stSlider label { font-size: 1rem !important; font-weight: 600 !important; color: var(--text-primary) !important; }
+
+/* ════════════════════════════
+   CHECKBOX
+   ════════════════════════════ */
+.stCheckbox label span:last-child { font-size: 1rem !important; font-weight: 500 !important; }
+
+/* ════════════════════════════
+   UPLOAD HINT
+   ════════════════════════════ */
+.ns-upload-hint {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 0.5rem 0 0.25rem;
 }
+
+/* ════════════════════════════
+   ANIMATIONS
+   ════════════════════════════ */
 @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
 }
-
-/* ══════════ UPLOAD HINT ══════════ */
-.upload-hint {
-    font-size: 0.95rem;
-    color: var(--grey-mid);
-    text-align: center;
-    padding: 0.5rem 0 1rem;
+@keyframes badgePop {
+    0%   { transform: scale(0.8); opacity: 0; }
+    65%  { transform: scale(1.04); }
+    100% { transform: scale(1); opacity: 1; }
 }
 
-/* hide streamlit default UI chrome */
+/* ════════════════════════════
+   HIDE STREAMLIT CHROME
+   ════════════════════════════ */
 #MainMenu, footer, header { visibility: hidden; }
-.block-container { padding-top: 0.5rem; max-width: 1280px; }
+.block-container { padding-top: 0; max-width: 1300px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -798,7 +962,7 @@ def make_brain_mask_visual(brain_mask: np.ndarray, gray: np.ndarray) -> np.ndarr
 def fig_to_pil(fig) -> Image.Image:
     buf = io.BytesIO()
     fig.savefig(buf, format="png", bbox_inches="tight",
-                facecolor="#1f1f1f", edgecolor="none", dpi=130)
+                facecolor="#141f18", edgecolor="none", dpi=130)
     buf.seek(0)
     return Image.open(buf).copy()
 
@@ -806,28 +970,28 @@ def fig_to_pil(fig) -> Image.Image:
 def plot_histogram(gray: np.ndarray, brain_mask: np.ndarray,
                    tumor_mask: np.ndarray | None, diag: dict) -> Image.Image:
     fig, ax = plt.subplots(figsize=(5, 2.8))
-    fig.patch.set_facecolor("#1f1f1f")
-    ax.set_facecolor("#1f1f1f")
+    fig.patch.set_facecolor("#141f18")
+    ax.set_facecolor("#141f18")
     brain_vals = gray[brain_mask & (tumor_mask == False if tumor_mask is not None else brain_mask)]
-    ax.hist(brain_vals, bins=60, color="#00B4D8", alpha=0.55, label="Normal brain tissue",
+    ax.hist(brain_vals, bins=60, color="#22c55e", alpha=0.5, label="Normal brain tissue",
             density=True, histtype="stepfilled")
     if tumor_mask is not None and tumor_mask.any():
         tumor_vals = gray[tumor_mask]
-        ax.hist(tumor_vals, bins=30, color="#E50914", alpha=0.8, label="Suspected tumor region",
+        ax.hist(tumor_vals, bins=30, color="#ef4444", alpha=0.8, label="Suspected tumor region",
                 density=True, histtype="stepfilled")
     if "thr_a" in diag:
-        ax.axvline(diag["thr_a"], color="#F5A623", linewidth=1.5,
-                   linestyle="--", label=f"Brightness cutoff")
+        ax.axvline(diag["thr_a"], color="#f59e0b", linewidth=1.5,
+                   linestyle="--", label="Brightness cutoff")
     if "otsu_t" in diag:
-        ax.axvline(diag["otsu_t"], color="#46D369", linewidth=1.5,
-                   linestyle=":", label=f"Otsu split")
+        ax.axvline(diag["otsu_t"], color="#86efac", linewidth=1.5,
+                   linestyle=":", label="Otsu split")
     ax.spines[["top","right","left","bottom"]].set_visible(False)
-    ax.tick_params(colors="#808080", labelsize=7)
-    ax.set_xlabel("Pixel Brightness (0 = dark, 1 = bright)", color="#808080", fontsize=8)
-    ax.set_ylabel("How common", color="#808080", fontsize=8)
-    ax.set_title("Brightness Distribution — Brain vs Tumor", color="#E5E5E5", fontsize=9, pad=8)
+    ax.tick_params(colors="#4ade80", labelsize=7)
+    ax.set_xlabel("Pixel Brightness (0 = dark, 1 = bright)", color="#4ade80", fontsize=8)
+    ax.set_ylabel("How common", color="#4ade80", fontsize=8)
+    ax.set_title("Brightness Distribution — Brain vs Tumor", color="#f0fdf4", fontsize=9, pad=8)
     leg = ax.legend(fontsize=7, framealpha=0)
-    for t in leg.get_texts(): t.set_color("#B3B3B3")
+    for t in leg.get_texts(): t.set_color("#86efac")
     plt.tight_layout(pad=0.5)
     img = fig_to_pil(fig)
     plt.close(fig)
@@ -840,23 +1004,23 @@ def plot_intensity_profile(gray: np.ndarray, tumor_mask: np.ndarray) -> Image.Im
     cy   = int(rows.mean()) if rows.size else gray.shape[0] // 2
     cx   = int(cols.mean()) if cols.size else gray.shape[1] // 2
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6, 2.6))
-    fig.patch.set_facecolor("#1f1f1f")
+    fig.patch.set_facecolor("#141f18")
     for ax, profile, label in [
         (ax1, gray[cy, :],  "Horizontal scan"),
         (ax2, gray[:, cx],  "Vertical scan"),
     ]:
-        ax.set_facecolor("#1f1f1f")
-        ax.plot(profile, color="#00B4D8", linewidth=1.2)
-        ax.fill_between(range(len(profile)), profile, alpha=0.15, color="#00B4D8")
+        ax.set_facecolor("#141f18")
+        ax.plot(profile, color="#22c55e", linewidth=1.2)
+        ax.fill_between(range(len(profile)), profile, alpha=0.15, color="#22c55e")
         ax.spines[["top","right","left","bottom"]].set_visible(False)
-        ax.tick_params(colors="#808080", labelsize=6)
-        ax.set_title(f"{label} through center of region", color="#B3B3B3", fontsize=8)
+        ax.tick_params(colors="#4ade80", labelsize=6)
+        ax.set_title(f"{label} through center of region", color="#86efac", fontsize=8)
         if label == "Horizontal scan":
             if cols.size:
-                ax.axvspan(cols[0], cols[-1], alpha=0.2, color="#E50914", label="Tumor span")
+                ax.axvspan(cols[0], cols[-1], alpha=0.2, color="#ef4444", label="Tumor span")
         else:
             if rows.size:
-                ax.axvspan(rows[0], rows[-1], alpha=0.2, color="#E50914", label="Tumor span")
+                ax.axvspan(rows[0], rows[-1], alpha=0.2, color="#ef4444", label="Tumor span")
     plt.tight_layout(pad=0.4)
     img = fig_to_pil(fig)
     plt.close(fig)
@@ -865,20 +1029,20 @@ def plot_intensity_profile(gray: np.ndarray, tumor_mask: np.ndarray) -> Image.Im
 
 def plot_signal_votes(votes_map: np.ndarray, brain_mask: np.ndarray) -> Image.Image:
     fig, ax = plt.subplots(figsize=(3.5, 3))
-    fig.patch.set_facecolor("#1f1f1f")
-    ax.set_facecolor("#1f1f1f")
+    fig.patch.set_facecolor("#141f18")
+    ax.set_facecolor("#141f18")
     disp = votes_map.astype(float)
     disp[~brain_mask] = np.nan
     cmap = LinearSegmentedColormap.from_list(
-        "vote", ["#141414", "#00B4D8", "#F5A623", "#E50914"], N=4
+        "vote", ["#0a1a0f", "#22c55e", "#f59e0b", "#ef4444"], N=4
     )
     im = ax.imshow(disp, cmap=cmap, vmin=0, vmax=3, aspect="auto")
     ax.axis("off")
-    ax.set_title("Agreement Map\n(how many detectors agree: 0–3)", color="#B3B3B3", fontsize=8, pad=6)
+    ax.set_title("Agreement Map — Detectors 0–3", color="#86efac", fontsize=8, pad=6)
     cbar = fig.colorbar(im, ax=ax, fraction=0.045, pad=0.02)
     cbar.set_ticks([0, 1, 2, 3])
-    cbar.set_ticklabels(["None", "1/3", "2/3", "All 3"])
-    cbar.ax.tick_params(colors="#808080", labelsize=7)
+    cbar.set_ticklabels(["None", "1 of 3", "2 of 3", "All 3"])
+    cbar.ax.tick_params(colors="#4ade80", labelsize=7)
     cbar.outline.set_visible(False)
     plt.tight_layout(pad=0.3)
     img = fig_to_pil(fig)
@@ -892,11 +1056,11 @@ def plot_signal_votes(votes_map: np.ndarray, brain_mask: np.ndarray) -> Image.Im
 
 def classify_risk(confidence: float, area_frac: float, contrast: float) -> tuple:
     if confidence > 0.82 and area_frac > 0.005:
-        return "HIGH", "risk-high", "This scan shows strong signs of an abnormal region. We recommend consulting a neurologist or radiologist as soon as possible for a professional review."
+        return "HIGH", "high", "This scan shows strong signs of an abnormal region. We recommend consulting a neurologist or radiologist as soon as possible for a professional review."
     elif confidence > 0.68 or area_frac > 0.003:
-        return "MODERATE", "risk-medium", "There are moderate indicators of an unusual region. Additional imaging (like a contrast MRI or PET scan) would help clarify the finding."
+        return "MODERATE", "medium", "There are moderate indicators of an unusual region. Additional imaging (like a contrast MRI or PET scan) would help clarify the finding."
     else:
-        return "LOW", "risk-low", "The signs are mild. No immediate action may be needed, but it's worth doing a follow-up scan in 3–6 months to monitor any changes."
+        return "LOW", "low", "The signs are mild. No immediate action may be needed, but it's worth doing a follow-up scan in 3–6 months to monitor any changes."
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -904,38 +1068,22 @@ def classify_risk(confidence: float, area_frac: float, contrast: float) -> tuple
 # ═════════════════════════════════════════════════════════════════════════════
 
 PIPELINE_STEPS = [
-    {
-        "title": "Step 1 — Loading & Preparing the Image",
-        "detail": "The MRI image is converted to grayscale (black-and-white) and every pixel's brightness is scaled from 0 (pure black) to 1 (pure white). A light blur is applied to reduce digital noise without losing important edges — similar to how a camera smooths out grain."
-    },
-    {
-        "title": "Step 2 — Skull Stripping (Isolating the Brain)",
-        "detail": "The algorithm finds and removes the skull, scalp, and background from the image, keeping only the brain tissue. It does this by identifying the large bright mass in the center, shrinking its edges to cut away the skull ring, then slightly expanding to recover brain tissue near the surface."
-    },
-    {
-        "title": "Step 3 — Computing a Brightness Map",
-        "detail": "For each pixel inside the brain, the system calculates how bright it is compared to its immediate neighbours. A tumor often appears unusually bright or dark compared to surrounding tissue — this map captures those differences in a grid of 'local contrast' scores."
-    },
-    {
-        "title": "Step 4 — Running 3 Independent Detectors",
-        "detail": "Three separate detection methods run at the same time:\n• Detector A (Z-score): Flags pixels that are significantly brighter than the brain average — like spotting someone unusually tall in a crowd.\n• Detector B (Local Contrast): Flags pixels that stand out compared to their immediate neighbourhood, even if globally they look normal.\n• Detector C (Otsu Split): Automatically finds the best brightness level to split the scan into 'normal' and 'abnormal' halves."
-    },
-    {
-        "title": "Step 5 — Voting & Noise Cleanup",
-        "detail": "A pixel is flagged as suspicious only if at least 2 out of 3 detectors agree. This reduces false alarms. The result is then cleaned up: tiny isolated dots (noise) are removed, nearby flagged areas are merged, and any holes inside a detected region are filled in."
-    },
-    {
-        "title": "Step 6 — Selecting the Most Likely Region",
-        "detail": "If multiple suspicious blobs remain, the system scores each one based on size, compactness, and roundness — since tumors tend to be solid, compact, and roughly oval. Thin strips or crescents along the skull edge are penalized. The highest-scoring blob is selected as the final candidate region."
-    },
-    {
-        "title": "Step 7 — Measuring & Scoring the Region",
-        "detail": "The detected region is measured for: how bright it is vs the surrounding brain, what fraction of the brain it covers, and how circular it is. These three signals are combined into a single confidence score (50%–98%) that estimates how likely the region is a real anomaly."
-    },
-    {
-        "title": "Step 8 — Generating Report & Visuals",
-        "detail": "All findings are assembled into the clinical report you see below: the highlighted overlay, heatmap, intensity charts, and metrics. Nothing is stored or transmitted — all processing happens locally in your browser session."
-    },
+    {"title": "Step 1 — Loading & Preparing the Image",
+     "detail": "The MRI image is converted to grayscale and every pixel's brightness is scaled from 0 (pure black) to 1 (pure white). A light blur reduces digital noise without losing important edges."},
+    {"title": "Step 2 — Skull Stripping (Isolating the Brain)",
+     "detail": "The algorithm removes the skull, scalp, and background — keeping only brain tissue. It finds the large bright central mass, shrinks edges to cut the skull ring, then expands slightly to recover surface tissue."},
+    {"title": "Step 3 — Computing a Brightness Map",
+     "detail": "For each brain pixel, the system calculates how bright it is compared to its immediate neighbours. Tumors often appear unusually bright compared to surrounding tissue — this map captures those differences."},
+    {"title": "Step 4 — Running 3 Independent Detectors",
+     "detail": "Detector A (Z-score) flags pixels significantly brighter than the brain average. Detector B (Local Contrast) flags pixels that stand out from their neighbourhood. Detector C (Otsu) auto-finds a brightness split between normal and abnormal."},
+    {"title": "Step 5 — Voting & Noise Cleanup",
+     "detail": "A pixel is only flagged if at least 2 of 3 detectors agree. Then: tiny isolated dots are removed, nearby areas are merged, and holes inside detected regions are filled."},
+    {"title": "Step 6 — Selecting the Most Likely Region",
+     "detail": "If multiple blobs remain, each is scored by size, compactness, and roundness — since tumors tend to be solid and roughly oval. Thin strips along the skull edge are penalised."},
+    {"title": "Step 7 — Measuring & Scoring the Region",
+     "detail": "The region is measured for brightness contrast vs surrounding brain, its fraction of total brain area, and how circular it is. These three signals combine into a confidence score (50–98%)."},
+    {"title": "Step 8 — Generating Report & Visuals",
+     "detail": "All findings are assembled into the clinical report: the highlighted overlay, heatmap, intensity charts, and metrics. Nothing is stored or transmitted — all processing is local."},
 ]
 
 
@@ -944,20 +1092,18 @@ PIPELINE_STEPS = [
 # ═════════════════════════════════════════════════════════════════════════════
 
 st.markdown("""
-<div class="nf-hero">
-  <p style="font-size:0.9rem;font-weight:700;letter-spacing:0.2em;color:#E50914;text-transform:uppercase;margin-bottom:0.5rem;">
-    AI-Powered Brain MRI Analysis
+<div class="ns-hero">
+  <div class="ns-hero-eyebrow">AI-Powered Brain MRI Analysis · v2.0 Ensemble Pipeline</div>
+  <h1 class="ns-hero-title">Neuro<span class="hi">Scan</span></h1>
+  <p class="ns-hero-desc">
+    Upload a brain MRI slice and our multi-signal ensemble pipeline will detect unusual regions,
+    measure their size and brightness contrast, and deliver a full plain-English clinical report.
   </p>
-  <h1 class="nf-logo">Neuro<span>Scan</span></h1>
-  <p class="nf-tagline">
-    Upload a brain MRI slice and our ensemble detection pipeline will analyse it for unusual regions,
-    measure their size and brightness contrast, and give you a full plain-English report.
-  </p>
-  <div class="nf-badges">
-    <span class="nf-badge red">⚠️ Research Use Only — Not a Medical Device</span>
-    <span class="nf-badge">Always Consult a Radiologist</span>
-    <span class="nf-badge">T1 · T1-CE · T2 · FLAIR Supported</span>
-    <span class="nf-badge">v2.0 Ensemble Pipeline</span>
+  <div class="ns-badge-row">
+    <span class="ns-badge warn">⚠ Research Use Only — Not a Medical Device</span>
+    <span class="ns-badge">Always Consult a Radiologist</span>
+    <span class="ns-badge">T1 · T1-CE · T2 · FLAIR</span>
+    <span class="ns-badge">3-Detector Ensemble</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -968,551 +1114,510 @@ st.markdown("""
 # ═════════════════════════════════════════════════════════════════════════════
 
 with st.sidebar:
-    st.markdown("## 🧠 NeuroScan")
-    st.markdown('<div class="sidebar-heading">Detection Sensitivity</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sb-logo">Neuro<span>Scan</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sb-rule"></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sb-heading">Detection Sensitivity</div>', unsafe_allow_html=True)
 
     sensitivity = st.select_slider(
-        "Choose how aggressively to flag anomalies",
+        "Adjust how aggressively anomalies are flagged",
         options=["low", "balanced", "high"],
         value="balanced",
     )
 
-    sensitivity_descriptions = {
-        "low": ("🔵 Conservative Mode",
-                "Only flags very obvious, high-contrast anomalies. Fewer false alarms but may miss small or subtle lesions. Best for quick screening."),
-        "balanced": ("🟡 Balanced Mode (Recommended)",
-                     "A good middle ground that works well for most standard brain MRI scans. This is the default and recommended setting."),
-        "high": ("🔴 High Sensitivity Mode",
-                 "Catches even faint or very small anomalies. Useful if you already suspect a lesion exists. May produce some false positives on noisy scans."),
+    _modes = {
+        "low":      ("🔵  Conservative", "Only flags very obvious, high-contrast anomalies. Fewer false alarms but may miss subtle or small lesions."),
+        "balanced": ("🟡  Balanced — Recommended", "The default setting. Works well for most standard brain MRI scans and provides a reliable result."),
+        "high":     ("🔴  High Sensitivity", "Catches faint or small anomalies. Useful when you already suspect a lesion is present. May produce some false positives."),
     }
-    s_title, s_desc = sensitivity_descriptions[sensitivity]
-    st.markdown(f"""
-<div style="background:#1f1f1f;border:1px solid #333;border-left:4px solid #E50914;border-radius:8px;padding:1rem 1.1rem;margin:0.5rem 0 1rem;">
-  <div style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:0.4rem;">{s_title}</div>
-  <div style="font-size:0.92rem;color:#B3B3B3;line-height:1.6;">{s_desc}</div>
-</div>""", unsafe_allow_html=True)
+    _mt, _mb = _modes[sensitivity]
+    st.markdown(f'<div class="sb-mode-card"><div class="sb-mode-title">{_mt}</div><div class="sb-mode-body">{_mb}</div></div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="sidebar-heading">Display Options</div>', unsafe_allow_html=True)
-    show_debug = st.checkbox("🔬 Show pipeline intermediate images", value=False)
+    st.markdown('<div class="sb-heading">Display Options</div>', unsafe_allow_html=True)
+    show_debug = st.checkbox("🔬  Show pipeline intermediate images", value=False)
     if show_debug:
-        st.markdown("""<div style="background:#1f1f1f;border:1px solid #333;border-radius:6px;padding:0.8rem 1rem;font-size:0.9rem;color:#B3B3B3;line-height:1.6;margin-bottom:0.75rem;">
-Shows 3 internal images: the normalized grayscale, the brain mask (what the AI considers brain tissue), and the raw binary tumor mask before overlay rendering.</div>""", unsafe_allow_html=True)
+        st.markdown('<div class="sb-option-card">Shows 3 internal processing images: the normalized grayscale input, the brain mask showing exactly what tissue was analysed, and the raw binary tumor mask before the final overlay is drawn.</div>', unsafe_allow_html=True)
 
-    show_votes = st.checkbox("🗳️ Show detector agreement map", value=False)
+    show_votes = st.checkbox("🗳️  Show detector agreement map", value=False)
     if show_votes:
-        st.markdown("""<div style="background:#1f1f1f;border:1px solid #333;border-radius:6px;padding:0.8rem 1rem;font-size:0.9rem;color:#B3B3B3;line-height:1.6;margin-bottom:0.75rem;">
-Displays a colour map showing which pixels were flagged by 1, 2, or all 3 detectors. Red = all 3 agreed. Only regions with 2+ agreement are marked as anomalous.</div>""", unsafe_allow_html=True)
+        st.markdown('<div class="sb-option-card">Shows a colour map of which pixels were flagged by 1, 2, or all 3 detectors. Green = 1 detector. Amber = 2 detectors (the detection threshold). Red = all 3 agreed.</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="sidebar-heading">How the Algorithm Works</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sb-heading">How the Algorithm Works</div>', unsafe_allow_html=True)
 
-    algo_steps = [
-        ("Preprocess", "Convert to grayscale, normalize brightness 0–1, apply mild blur to reduce noise"),
-        ("Skull Strip", "Remove skull & background, keep only brain tissue for analysis"),
-        ("Local Contrast", "Map how each pixel compares to its immediate neighbours"),
+    _algo = [
+        ("Preprocess",         "Convert to grayscale, normalize 0–1, apply mild noise-reduction blur"),
+        ("Skull Strip",        "Remove skull and background; keep only brain tissue"),
+        ("Local Contrast Map", "Calculate how each pixel compares to its immediate neighbours"),
         ("Detector A — Z-score", "Flag pixels far above average brain brightness"),
-        ("Detector B — Local Contrast", "Flag pixels unusually bright vs their surroundings"),
-        ("Detector C — Otsu Split", "Auto-find brightness threshold to split normal vs abnormal"),
-        ("2-of-3 Voting", "Only keep pixels where at least 2 detectors agreed"),
-        ("Cleanup", "Remove noise dots, fill holes, filter tiny blobs"),
-        ("Blob Scoring", "Score regions by size, compactness and roundness"),
-        ("Report", "Calculate confidence, render highlights and charts"),
+        ("Detector B — Local", "Flag pixels unusually bright vs their neighbourhood"),
+        ("Detector C — Otsu",  "Auto-threshold to separate normal from abnormal pixels"),
+        ("2-of-3 Voting",      "Only keep pixels where ≥ 2 detectors agreed"),
+        ("Cleanup",            "Remove noise, fill holes, filter tiny blobs"),
+        ("Blob Scoring",       "Score regions by size, compactness, and roundness"),
+        ("Report",             "Calculate confidence, render highlights and full report"),
     ]
-    for num, (title, desc) in enumerate(algo_steps, 1):
-        st.markdown(f"""
-<div class="sidebar-algo-step">
-  <div class="sidebar-num">{num:02d}</div>
-  <div>
-    <div class="sidebar-algo-title">{title}</div>
-    <div class="sidebar-algo-text">{desc}</div>
-  </div>
+    for n, (t, d) in enumerate(_algo, 1):
+        st.markdown(f"""<div class="sb-algo-step">
+  <div class="sb-num">{n:02d}</div>
+  <div><div class="sb-algo-title">{t}</div><div class="sb-algo-body">{d}</div></div>
 </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown('<div style="font-size:0.9rem;color:#808080;text-align:center;">NeuroScan v2.0 · Research Prototype<br>Not validated for clinical use</div>', unsafe_allow_html=True)
+    st.markdown('<p style="font-size:0.82rem;color:rgba(134,239,172,0.4);text-align:center;line-height:1.6;">NeuroScan v2.0 · Research Prototype<br>Not validated for clinical use</p>', unsafe_allow_html=True)
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  UPLOAD SECTION
+#  UPLOAD
 # ═════════════════════════════════════════════════════════════════════════════
-
-st.markdown('<div class="nf-section-title"><span class="red-bar"></span>Upload Your MRI Scan</div>', unsafe_allow_html=True)
 
 st.markdown("""
-<div class="info-panel">
-  <strong>What to upload:</strong> A single 2D slice from a brain MRI scan saved as PNG or JPEG.
-  Best results come from <strong>axial (top-down) slices</strong> in T1, T1 with contrast, T2, or FLAIR format.
-  The file should show clearly visible brain tissue — not a scout localizer or sagittal view.
+<div class="ns-section">
+  <div class="ns-section-bar"></div>
+  <h2 class="ns-section-title">Upload Your MRI Scan</h2>
 </div>
 """, unsafe_allow_html=True)
 
-col_up_l, col_up_c, col_up_r = st.columns([1, 2, 1])
-with col_up_c:
+st.markdown("""
+<div class="ns-info">
+  <strong>What to upload:</strong> A single 2D slice from a brain MRI scan, saved as PNG or JPEG.
+  Best results come from <em>axial (top-down) slices</em> in T1, T1-with-contrast, T2, or FLAIR format.
+  The image should show clearly visible brain tissue — not a scout localizer or a sagittal/coronal view.
+</div>
+""", unsafe_allow_html=True)
+
+col_l, col_c, col_r = st.columns([1, 2, 1])
+with col_c:
     uploaded_file = st.file_uploader(
         "Drag and drop your MRI image here, or click to browse",
         type=["png", "jpg", "jpeg"],
     )
-    st.markdown('<p class="upload-hint">PNG preferred · Axial slice · T1 · T2 · FLAIR formats · Max 200MB</p>',
+    st.markdown('<p class="ns-upload-hint">PNG preferred · Axial slice · T1 · T2 · FLAIR formats supported</p>',
                 unsafe_allow_html=True)
 
 if uploaded_file:
     raw_img = Image.open(uploaded_file).convert("RGB")
 
-    col_btn_l, col_btn_c, col_btn_r = st.columns([1, 1, 1])
-    with col_btn_c:
+    col_l2, col_c2, col_r2 = st.columns([1, 1, 1])
+    with col_c2:
         run = st.button("▶  Run Analysis Now")
 
     if run:
 
-        # ── Animated pipeline progress ────────────────────────────────────────
-        st.markdown('<div class="nf-section-title"><span class="red-bar"></span>Analysis in Progress</div>',
-                    unsafe_allow_html=True)
+        # ── Animated pipeline ──────────────────────────────────────────────
+        st.markdown("""
+<div class="ns-section">
+  <div class="ns-section-bar"></div>
+  <h2 class="ns-section-title">Analysis in Progress</h2>
+</div>
+""", unsafe_allow_html=True)
         status_box = st.empty()
 
-        done_steps = []
+        done = []
         for i, step in enumerate(PIPELINE_STEPS):
-            html_steps = ""
-            for s in done_steps:
-                html_steps += f"""
-<div class="pipeline-step step-done-bg">
-  <div class="step-dot-done"></div>
-  <div><div class="step-title-done">✓ {s['title']}</div></div>
-</div>"""
-            html_steps += f"""
-<div class="pipeline-step step-active-bg">
-  <div class="step-dot-active"></div>
-  <div>
-    <div class="step-title-active">{step['title']}</div>
-    <div class="step-detail">{step['detail']}</div>
-  </div>
-</div>"""
+            html = ""
+            for s in done:
+                html += f'<div class="pipe-step"><div class="pdot-done"></div><div><div class="pipe-title-done">✓ {s["title"]}</div></div></div>'
+            html += f'<div class="pipe-step pipe-active"><div class="pdot-active"></div><div><div class="pipe-title-active">{step["title"]}</div><div class="pipe-detail">{step["detail"]}</div></div></div>'
             for s in PIPELINE_STEPS[i+1:]:
-                html_steps += f"""
-<div class="pipeline-step step-done-bg" style="opacity:0.3">
-  <div class="step-dot-wait"></div>
-  <div><div class="step-title-wait">{s['title']}</div></div>
-</div>"""
-
+                html += f'<div class="pipe-step" style="opacity:0.35"><div class="pdot-wait"></div><div><div class="pipe-title-wait">{s["title"]}</div></div></div>'
             status_box.markdown(
-                f'<div style="background:#1f1f1f;border:1px solid #333;border-radius:12px;padding:1.5rem;"><div class="pipeline-wrap">{html_steps}</div></div>',
+                f'<div style="background:var(--surface-2);border:1px solid var(--border-mid);border-radius:var(--radius-lg);padding:1.5rem 1.75rem;"><div class="pipeline-wrap">{html}</div></div>',
                 unsafe_allow_html=True)
             time.sleep(0.55)
-            done_steps.append(step)
+            done.append(step)
 
-        # ── Run the actual pipeline ───────────────────────────────────────
+        # ── Run detection ──────────────────────────────────────────────────
         gray_norm  = preprocess_mri(raw_img)
         brain_mask = extract_brain_mask(gray_norm)
-        bbox, tumor_mask, diag = detect_tumor_region(
-            gray_norm, brain_mask, sensitivity=sensitivity
-        )
+        bbox, tumor_mask, diag = detect_tumor_region(gray_norm, brain_mask, sensitivity=sensitivity)
 
-        # Mark all steps done
-        html_done = ""
-        for s in PIPELINE_STEPS:
-            html_done += f"""
-<div class="pipeline-step step-done-bg">
-  <div class="step-dot-done"></div>
-  <div><div class="step-title-done">✓ {s['title']}</div></div>
-</div>"""
+        html_done = "".join(
+            f'<div class="pipe-step"><div class="pdot-done"></div><div><div class="pipe-title-done">✓ {s["title"]}</div></div></div>'
+            for s in PIPELINE_STEPS
+        )
         status_box.markdown(
-            f'<div style="background:#1f1f1f;border:1px solid #333;border-radius:12px;padding:1.5rem;"><div class="pipeline-wrap">{html_done}</div></div>',
+            f'<div style="background:var(--surface-2);border:1px solid var(--border-mid);border-radius:var(--radius-lg);padding:1.5rem 1.75rem;"><div class="pipeline-wrap">{html_done}</div></div>',
             unsafe_allow_html=True)
         time.sleep(0.4)
         status_box.empty()
 
         # ══════════════════════════════════════════════════════════════════
-        #  RESULTS
+        #  RESULTS — ANOMALY FOUND
         # ══════════════════════════════════════════════════════════════════
 
         if bbox is not None and tumor_mask is not None:
-            confidence  = estimate_confidence(diag)
-            area_pct    = diag["area_frac"] * 100
-            risk, risk_cls, recommendation = classify_risk(
-                confidence, diag["area_frac"], diag["contrast"]
-            )
+            confidence = estimate_confidence(diag)
+            area_pct   = diag["area_frac"] * 100
+            risk, risk_cls, recommendation = classify_risk(confidence, diag["area_frac"], diag["contrast"])
             result_img  = draw_highlight(raw_img, bbox, tumor_mask)
             heatmap_arr = make_heatmap(gray_norm, brain_mask, tumor_mask)
 
-            # ── Detection status banner ───────────────────────────────────
-            st.markdown('<div class="nf-section-title"><span class="red-bar"></span>Detection Result</div>',
-                        unsafe_allow_html=True)
+            # ── Status banner ──────────────────────────────────────────────
+            st.markdown("""
+<div class="ns-section">
+  <div class="ns-section-bar"></div>
+  <h2 class="ns-section-title">Detection Result</h2>
+</div>
+""", unsafe_allow_html=True)
 
             st.markdown(f"""
-<div class="detect-badge-wrap">
-  <span class="nf-detect-badge badge-anomaly">
-    <span class="pulse-dot"></span>&nbsp;Anomaly Detected
-  </span>
-  <span class="risk-pill {risk_cls}">{risk} Risk</span>
+<div class="ns-result-row">
+  <span class="ns-detect found"><span class="pdot"></span>Anomaly Detected</span>
+  <span class="ns-risk {risk_cls}">{risk} Risk</span>
 </div>
 """, unsafe_allow_html=True)
 
             st.markdown("""
-<div class="info-panel red-accent">
-  <strong>What this means:</strong><br>
-  The algorithm found a region in this scan that looks statistically unusual compared to the surrounding brain tissue.
-  It is brighter or differently textured than normal, and was confirmed by at least 2 of our 3 independent detection methods.
-  This <em>could</em> indicate a tumor, cyst, or other abnormality — but only a qualified radiologist or neurologist
-  can confirm or rule this out. This tool is a research aid, not a diagnosis.
+<div class="ns-info red">
+  <strong>What this means:</strong>
+  The algorithm found a region that looks statistically unusual compared to the surrounding brain tissue —
+  it was brighter or differently textured, and confirmed by at least 2 of our 3 independent detectors.
+  This <em>could</em> indicate a tumor, cyst, or other abnormality.
+  <strong>Only a qualified radiologist or neurologist can confirm this finding.</strong>
+  This tool is a research aid — not a clinical diagnosis.
 </div>
 """, unsafe_allow_html=True)
 
-            # ── Metric cards ──────────────────────────────────────────────
-            st.markdown('<div class="nf-section-title"><span class="red-bar"></span>Key Measurements</div>',
-                        unsafe_allow_html=True)
+            # ── Metric cards ───────────────────────────────────────────────
+            st.markdown("""
+<div class="ns-section">
+  <div class="ns-section-bar"></div>
+  <h2 class="ns-section-title">Key Measurements</h2>
+</div>
+""", unsafe_allow_html=True)
 
             st.markdown(f"""
-<div class="metric-row">
+<div class="ns-metric-grid">
 
-  <div class="metric-card mc-cyan">
-    <div class="metric-card-label">Detection Confidence</div>
-    <div class="metric-card-value">{confidence*100:.1f}%</div>
-    <div class="conf-bar-bg"><div class="conf-bar-fill" style="width:{confidence*100:.1f}%"></div></div>
-    <div class="metric-card-explain">
-      How certain the AI is that an anomaly genuinely exists here.
-      This combines brightness contrast, shape regularity, and region size.
-      It is <strong>not a medical probability</strong> — it reflects algorithmic confidence only.
-    </div>
+  <div class="ns-metric">
+    <div class="ns-metric-label">Detection Confidence</div>
+    <div class="ns-metric-value">{confidence*100:.1f}%</div>
+    <div class="ns-conf-track"><div class="ns-conf-fill" style="width:{confidence*100:.1f}%"></div></div>
+    <div class="ns-metric-desc">How algorithmically certain the system is that a real anomaly exists here.
+    Combines brightness contrast (55%), shape regularity (25%), and size (20%). Not a medical probability.</div>
   </div>
 
-  <div class="metric-card mc-red">
-    <div class="metric-card-label">Brain Coverage</div>
-    <div class="metric-card-value">{area_pct:.2f}%</div>
-    <div class="metric-card-explain">
-      The detected region covers this percentage of the total brain area visible in this slice.
-      Larger values mean a bigger suspected region relative to the brain.
-    </div>
+  <div class="ns-metric red">
+    <div class="ns-metric-label">Brain Coverage</div>
+    <div class="ns-metric-value">{area_pct:.2f}%</div>
+    <div class="ns-metric-desc">The detected region covers this percentage of the brain area visible in this slice.
+    Small values (&lt;1%) suggest a focal lesion. Very large values (&gt;10%) may indicate a false positive.</div>
   </div>
 
-  <div class="metric-card mc-amber">
-    <div class="metric-card-label">Brightness Contrast</div>
-    <div class="metric-card-value">{diag['contrast']:.2f}σ</div>
-    <div class="metric-card-explain">
-      How many standard deviations brighter the anomaly is compared to surrounding normal brain tissue.
-      Values above 2σ are considered notable. Higher = more clearly different from normal tissue.
-    </div>
+  <div class="ns-metric amber">
+    <div class="ns-metric-label">Brightness Contrast</div>
+    <div class="ns-metric-value">{diag['contrast']:.2f}σ</div>
+    <div class="ns-metric-desc">How many standard deviations brighter the anomaly is versus normal brain tissue.
+    Values above 2σ are notable. Higher = more clearly different from surrounding tissue.</div>
   </div>
 
-  <div class="metric-card mc-green">
-    <div class="metric-card-label">Region Roundness</div>
-    <div class="metric-card-value">{diag['circularity']:.2f}</div>
-    <div class="metric-card-explain">
-      How circular the detected region is. 1.0 = perfect circle. Brain tumors typically
-      score between 0.3 and 0.8. Very low scores (near 0) may indicate a skull artifact rather than a lesion.
-    </div>
+  <div class="ns-metric white">
+    <div class="ns-metric-label">Region Roundness</div>
+    <div class="ns-metric-value">{diag['circularity']:.2f}</div>
+    <div class="ns-metric-desc">How circular the detected region is. 1.0 = perfect circle.
+    Tumors typically score 0.3–0.8. Values near 0 suggest a skull artifact rather than a true lesion.</div>
   </div>
 
 </div>
 """, unsafe_allow_html=True)
 
-            # ── Image tabs ────────────────────────────────────────────────
-            st.markdown('<div class="nf-section-title"><span class="red-bar"></span>Visual Analysis</div>',
-                        unsafe_allow_html=True)
+            # ── Image tabs ─────────────────────────────────────────────────
+            st.markdown("""
+<div class="ns-section">
+  <div class="ns-section-bar"></div>
+  <h2 class="ns-section-title">Visual Analysis</h2>
+</div>
+""", unsafe_allow_html=True)
 
-            tab1, tab2, tab3 = st.tabs([
-                "🖼️  Detection Overlay",
-                "🌡️  Heatmap View",
-                "📊  Analysis Charts"
-            ])
+            tab1, tab2, tab3 = st.tabs(["🖼  Detection Overlay", "🌡  Heatmap View", "📊  Analysis Charts"])
 
             with tab1:
                 st.markdown("""
-<div class="info-panel">
-  <strong>How to read this view:</strong><br>
-  The <strong>left image</strong> is your original MRI scan exactly as uploaded — nothing changed.<br>
-  The <strong>right image</strong> is the same scan with the suspected anomaly highlighted:
-  the region is coloured red, surrounded by an orange glow halo.
-  The <strong>yellow crosshair</strong> marks the centre of the detected region,
-  and the <strong>corner brackets</strong> show the bounding box drawn around it.
+<div class="ns-info">
+  <strong>Left — Original Scan:</strong> Your uploaded MRI image, unchanged.<br>
+  <strong>Right — Anomaly Highlighted:</strong> Same scan with the detected region coloured red and surrounded by an orange glow.
+  The <em>yellow crosshair</em> marks the region's centre. The <em>corner brackets</em> show the bounding box used to measure its position and size.
 </div>
 """, unsafe_allow_html=True)
                 c1, c2 = st.columns(2)
                 with c1:
-                    st.markdown('<span class="img-label">Original MRI Scan</span>', unsafe_allow_html=True)
+                    st.markdown('<div class="ns-img-label">Original MRI Scan</div>', unsafe_allow_html=True)
                     st.image(raw_img, use_container_width=True)
                 with c2:
-                    st.markdown('<span class="img-label">Anomaly Highlighted</span>', unsafe_allow_html=True)
+                    st.markdown('<div class="ns-img-label">Anomaly Highlighted</div>', unsafe_allow_html=True)
                     st.image(result_img, use_container_width=True)
 
             with tab2:
                 st.markdown("""
-<div class="info-panel">
-  <strong>How to read the Heatmap:</strong><br>
-  Each pixel is coloured by its brightness intensity — <strong>dark purple = very low</strong>,
-  progressing through red and orange to <strong>bright yellow/white = very high</strong>.
-  The <strong>cyan/blue region</strong> is the detected anomaly overlaid on top.
-  Regions that appear much brighter than surrounding tissue are the ones the algorithm flagged.<br><br>
-  <strong>How to read the Brain Mask:</strong><br>
-  The <strong>blue-tinted area</strong> shows exactly what the algorithm considered "brain tissue" during analysis.
-  Everything dark has been excluded (skull, background, scalp). Only the blue region was used to calculate thresholds and detect anomalies.
+<div class="ns-info">
+  <strong>Left — Intensity Heatmap:</strong> Each pixel is coloured by brightness —
+  dark purple = low intensity, progressing through red/orange to bright yellow/white = very high.
+  The <em>cyan region</em> is the detected anomaly overlaid on top.<br>
+  <strong>Right — Brain Mask:</strong> The blue-tinted area is the exact tissue the algorithm analysed.
+  Everything dark (skull, background, scalp) was excluded. Only the blue region was used to calculate thresholds and run detection.
 </div>
 """, unsafe_allow_html=True)
                 c1, c2 = st.columns(2)
                 with c1:
-                    st.markdown('<span class="img-label">Intensity Heatmap + Anomaly Overlay</span>', unsafe_allow_html=True)
+                    st.markdown('<div class="ns-img-label">Intensity Heatmap + Anomaly Overlay</div>', unsafe_allow_html=True)
                     st.image(heatmap_arr, use_container_width=True)
                 with c2:
-                    st.markdown('<span class="img-label">Brain Mask — What the AI Analysed</span>', unsafe_allow_html=True)
-                    brain_vis = make_brain_mask_visual(brain_mask, gray_norm)
-                    st.image(brain_vis, use_container_width=True)
+                    st.markdown('<div class="ns-img-label">Brain Mask — What the AI Analysed</div>', unsafe_allow_html=True)
+                    st.image(make_brain_mask_visual(brain_mask, gray_norm), use_container_width=True)
 
             with tab3:
                 st.markdown("""
-<div class="info-panel">
-  <strong>How to read the Brightness Distribution chart (left):</strong><br>
-  The <strong>blue bars</strong> show how often each brightness level appears in normal brain tissue.
-  The <strong>red bars</strong> show the brightness levels found in the detected anomaly region.
-  If the red bars are shifted <em>to the right</em> of the blue bars, the anomaly is brighter than normal tissue — a key detection signal.
-  The <strong>dashed amber line</strong> shows the Z-score brightness cutoff. The <strong>green dotted line</strong> shows the Otsu split threshold.<br><br>
-  <strong>How to read the Intensity Profile chart (right):</strong><br>
-  These charts slice through the centre of the detected region — horizontally (left panel) and vertically (right panel).
-  The <strong>cyan line</strong> is pixel brightness from one edge of the image to the other.
-  The <strong>red shaded zone</strong> marks where the detected region spans. Peaks inside the red zone confirm the anomaly is brighter than surrounding tissue.
+<div class="ns-info">
+  <strong>Left — Brightness Distribution:</strong> Green bars = normal brain tissue pixel counts. Red bars = the anomaly region's pixel counts.
+  If red bars are shifted right of green, the anomaly is brighter than normal tissue — a core detection signal.
+  The <em>dashed amber line</em> is the Z-score cutoff. The <em>dotted line</em> is the Otsu auto-threshold.<br>
+  <strong>Right — Intensity Profile:</strong> Brightness sliced horizontally and vertically through the region centre.
+  The <em>red shaded zone</em> marks where the detected region spans. Peaks inside that zone confirm the anomaly is brighter than surroundings.
 </div>
 """, unsafe_allow_html=True)
                 c1, c2 = st.columns(2)
                 with c1:
-                    st.markdown('<span class="img-label">Pixel Brightness Distribution</span>', unsafe_allow_html=True)
-                    hist_img = plot_histogram(gray_norm, brain_mask, tumor_mask, diag)
-                    st.image(hist_img, use_container_width=True)
+                    st.markdown('<div class="ns-img-label">Pixel Brightness Distribution</div>', unsafe_allow_html=True)
+                    st.image(plot_histogram(gray_norm, brain_mask, tumor_mask, diag), use_container_width=True)
                 with c2:
-                    st.markdown('<span class="img-label">Brightness Profile Through Detected Region</span>', unsafe_allow_html=True)
-                    prof_img = plot_intensity_profile(gray_norm, tumor_mask)
-                    st.image(prof_img, use_container_width=True)
+                    st.markdown('<div class="ns-img-label">Brightness Profile Through Region</div>', unsafe_allow_html=True)
+                    st.image(plot_intensity_profile(gray_norm, tumor_mask), use_container_width=True)
 
                 if show_votes and "lc" in diag:
-                    brain_px   = gray_norm[brain_mask]
-                    mu, sig_v  = brain_px.mean(), brain_px.std()
-                    presets    = {"low":(3.2,2.8),"balanced":(2.5,2.2),"high":(1.8,1.6)}
-                    z_a, lc_z  = presets.get(sensitivity, (2.5,2.2))
-                    thr_a      = mu + z_a * sig_v
-                    lc_map     = diag["lc"]
-                    lc_brain   = lc_map[brain_mask]
-                    lc_thr     = lc_brain.mean() + lc_z * lc_brain.std()
-                    otsu_t     = diag["otsu_t"]
+                    brain_px  = gray_norm[brain_mask]
+                    mu, sig_v = brain_px.mean(), brain_px.std()
+                    _pre = {"low":(3.2,2.8),"balanced":(2.5,2.2),"high":(1.8,1.6)}
+                    z_a, lc_z = _pre.get(sensitivity, (2.5,2.2))
+                    lc_map    = diag["lc"]
+                    lc_thr    = lc_map[brain_mask].mean() + lc_z * lc_map[brain_mask].std()
                     votes_disp = (
-                        (gray_norm >= thr_a).astype(np.uint8) +
+                        (gray_norm >= mu + z_a*sig_v).astype(np.uint8) +
                         (lc_map    >= lc_thr).astype(np.uint8) +
-                        (gray_norm >= otsu_t).astype(np.uint8)
+                        (gray_norm >= diag["otsu_t"]).astype(np.uint8)
                     )
-                    vote_img = plot_signal_votes(votes_disp, brain_mask)
-                    st.markdown('<span class="img-label">Detector Agreement Map</span>', unsafe_allow_html=True)
+                    st.markdown('<div class="ns-img-label">Detector Agreement Map</div>', unsafe_allow_html=True)
                     st.markdown("""
-<div class="info-panel">
-  Each pixel is coloured by how many of the 3 detectors flagged it as suspicious.
-  <strong>Dark</strong> = no detector flagged it (normal tissue).
-  <strong>Cyan</strong> = 1 detector flagged it.
-  <strong>Amber</strong> = 2 detectors flagged it (this is the agreement threshold the algorithm uses).
-  <strong>Red</strong> = all 3 detectors agreed it is suspicious.
-  The algorithm only marks a region as anomalous where at least 2 detectors agree.
+<div class="ns-info">
+  Each pixel is coloured by how many of the 3 detectors flagged it.
+  <strong>Dark</strong> = no detector (normal tissue). <strong>Green</strong> = 1 detector.
+  <strong>Amber</strong> = 2 detectors — this is the agreement threshold the algorithm uses.
+  <strong>Red</strong> = all 3 detectors agreed. Only regions reaching amber or red are marked as anomalous.
 </div>""", unsafe_allow_html=True)
-                    st.image(vote_img, use_container_width=True)
+                    st.image(plot_signal_votes(votes_disp, brain_mask), use_container_width=True)
 
-            # ── Pipeline debug images ─────────────────────────────────────
+            # ── Pipeline debug images ──────────────────────────────────────
             if show_debug:
-                st.markdown('<div class="nf-section-title"><span class="red-bar"></span>Pipeline Intermediate Images</div>',
-                            unsafe_allow_html=True)
                 st.markdown("""
-<div class="info-panel">
-  These are the internal images generated at each stage of processing — useful for verifying the algorithm behaved correctly on your scan.<br>
-  <strong>Image 1 — Normalized Grayscale:</strong> The input image after converting to black-and-white and scaling brightness from 0 to 1. This is what all detectors work from.<br>
-  <strong>Image 2 — Brain Mask:</strong> The blue-tinted area is what the algorithm identified as brain tissue. Everything dark was excluded from analysis.<br>
-  <strong>Image 3 — Tumor Mask:</strong> The raw binary mask showing exactly which pixels were flagged as anomalous before the final overlay was drawn.
+<div class="ns-section">
+  <div class="ns-section-bar"></div>
+  <h2 class="ns-section-title">Pipeline Intermediate Images</h2>
+</div>
+""", unsafe_allow_html=True)
+                st.markdown("""
+<div class="ns-info">
+  <strong>Image 1 — Normalized Grayscale:</strong> The input after converting to black-and-white and scaling brightness 0–1. All three detectors work from this image.<br>
+  <strong>Image 2 — Brain Mask:</strong> The blue-tinted region is what was identified as brain tissue and used for analysis. Everything else was excluded.<br>
+  <strong>Image 3 — Raw Tumor Mask:</strong> The binary mask of flagged pixels before the final overlay rendering. Red pixels = the detected anomaly region.
 </div>
 """, unsafe_allow_html=True)
                 d1, d2, d3 = st.columns(3)
                 with d1:
-                    st.markdown('<span class="img-label">① Normalized Grayscale</span>', unsafe_allow_html=True)
+                    st.markdown('<div class="ns-img-label">① Normalized Grayscale</div>', unsafe_allow_html=True)
                     st.image((gray_norm * 255).astype(np.uint8), use_container_width=True)
                 with d2:
-                    st.markdown('<span class="img-label">② Brain Mask</span>', unsafe_allow_html=True)
-                    brain_debug = make_brain_mask_visual(brain_mask, gray_norm)
-                    st.image(brain_debug, use_container_width=True)
+                    st.markdown('<div class="ns-img-label">② Brain Mask</div>', unsafe_allow_html=True)
+                    st.image(make_brain_mask_visual(brain_mask, gray_norm), use_container_width=True)
                 with d3:
-                    st.markdown('<span class="img-label">③ Raw Tumor Mask</span>', unsafe_allow_html=True)
+                    st.markdown('<div class="ns-img-label">③ Raw Tumor Mask</div>', unsafe_allow_html=True)
                     vis = np.zeros((*tumor_mask.shape, 3), dtype=np.uint8)
                     vis[tumor_mask] = [255, 60, 60]
                     st.image(vis, use_container_width=True)
 
-            # ── Clinical Report ───────────────────────────────────────────
-            st.markdown('<div class="nf-section-title"><span class="red-bar"></span>Full Clinical Analysis Report</div>',
-                        unsafe_allow_html=True)
+            # ── Clinical Report ────────────────────────────────────────────
+            st.markdown("""
+<div class="ns-section">
+  <div class="ns-section-bar"></div>
+  <h2 class="ns-section-title">Full Clinical Analysis Report</h2>
+</div>
+""", unsafe_allow_html=True)
 
             st.markdown(f"""
-<div class="report-wrap">
-  <div class="report-title-bar">
-    <div class="report-title-text">Clinical Analysis Report</div>
-    <div class="report-meta-text">NeuroScan v2.0 · Ensemble Detection · Sensitivity: {sensitivity.upper()}</div>
+<div class="ns-report">
+  <div class="ns-report-header">
+    <div class="ns-report-title">Clinical Analysis Report</div>
+    <div class="ns-report-meta">NeuroScan v2.0 · Ensemble Detection · Sensitivity: {sensitivity.upper()}</div>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Detection Status</div>
-      <div class="finding-explain">Did the algorithm find a region that looks statistically unusual compared to normal brain tissue in this scan?</div>
+      <div class="ns-row-key">Detection Status</div>
+      <div class="ns-row-explain">Did the algorithm find a region that looks statistically unusual in this scan?</div>
     </div>
-    <span class="finding-val" style="color:#ff4757;">ANOMALY DETECTED</span>
+    <span class="ns-row-val" style="color:#fca5a5;">ANOMALY DETECTED</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Risk Classification</div>
-      <div class="finding-explain">Overall severity estimate based on detection confidence, the size of the region relative to the brain, and how bright it is. This is a heuristic estimate — not a medical diagnosis.</div>
+      <div class="ns-row-key">Risk Classification</div>
+      <div class="ns-row-explain">Overall severity estimate based on detection confidence, region size relative to the brain, and brightness contrast. A heuristic — not a clinical diagnosis.</div>
     </div>
-    <span class="risk-pill {risk_cls}">{risk}</span>
+    <span class="ns-risk {risk_cls}">{risk}</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Detection Confidence</div>
-      <div class="finding-explain">How algorithmically certain the system is that this is a real anomaly. Combines brightness contrast (55% weight), shape regularity (25%), and region size (20%). Range is 50%–98%.</div>
+      <div class="ns-row-key">Detection Confidence</div>
+      <div class="ns-row-explain">Algorithmic certainty that this is a genuine anomaly. Combines contrast (55%), shape (25%), and size (20%). Range 50–98%. Not a medical probability score.</div>
     </div>
-    <span class="finding-val">{confidence*100:.1f}%</span>
+    <span class="ns-row-val">{confidence*100:.1f}%</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Anomaly Size — % of Brain</div>
-      <div class="finding-explain">The detected region covers this fraction of the total brain area visible in this slice. Small values (under 1%) may indicate a focal lesion; large values (over 10%) could indicate diffuse pathology or a false positive.</div>
+      <div class="ns-row-key">Anomaly Size — % of Brain</div>
+      <div class="ns-row-explain">The detected region covers this fraction of the total brain area in this slice. Under 1% suggests a focal lesion. Over 10% may indicate diffuse pathology or a false positive.</div>
     </div>
-    <span class="finding-val">{area_pct:.2f}%</span>
+    <span class="ns-row-val">{area_pct:.2f}%</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Pixel Count (Anomaly Region)</div>
-      <div class="finding-explain">The total number of image pixels inside the detected region. This is resolution-dependent — a higher-resolution scan will produce larger pixel counts for the same physical area.</div>
+      <div class="ns-row-key">Pixel Count — Anomaly Region</div>
+      <div class="ns-row-explain">Total pixels inside the detected region. Resolution-dependent — a higher-resolution scan produces larger counts for the same physical area.</div>
     </div>
-    <span class="finding-val">{int(tumor_mask.sum()):,} px</span>
+    <span class="ns-row-val">{int(tumor_mask.sum()):,} px</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Location — Bounding Box</div>
-      <div class="finding-explain">The pixel coordinates of the rectangular box drawn around the anomaly. X = horizontal position (left to right); Y = vertical position (top to bottom). Used to locate the region in the image.</div>
+      <div class="ns-row-key">Location — Bounding Box</div>
+      <div class="ns-row-explain">Pixel coordinates of the box drawn around the anomaly. X = horizontal (left to right). Y = vertical (top to bottom).</div>
     </div>
-    <span class="finding-val">x: {bbox[0]}–{bbox[2]}, y: {bbox[1]}–{bbox[3]}</span>
+    <span class="ns-row-val">x: {bbox[0]}–{bbox[2]}, y: {bbox[1]}–{bbox[3]}</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Brightness Contrast (σ)</div>
-      <div class="finding-explain">How many standard deviations brighter the anomaly is compared to surrounding normal brain tissue. Values above 2σ are considered notable. Values above 3σ are strongly elevated and more likely to represent a genuine structural abnormality.</div>
+      <div class="ns-row-key">Brightness Contrast (σ)</div>
+      <div class="ns-row-explain">Standard deviations above normal brain brightness. Above 2σ is notable. Above 3σ strongly suggests a genuine structural difference from normal tissue.</div>
     </div>
-    <span class="finding-val">{diag['contrast']:.3f} σ</span>
+    <span class="ns-row-val">{diag['contrast']:.3f} σ</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Anomaly Mean Brightness</div>
-      <div class="finding-explain">The average pixel brightness value inside the detected region. Scale runs from 0 (pure black) to 1 (pure white). Higher values indicate a hyper-intense region, which is typical of certain tumor types on T1-CE and FLAIR sequences.</div>
+      <div class="ns-row-key">Anomaly Mean Brightness</div>
+      <div class="ns-row-explain">Average pixel brightness inside the detected region. 0 = pure black, 1 = pure white. Higher values indicate a hyper-intense region, typical of some tumor types on T1-CE and FLAIR.</div>
     </div>
-    <span class="finding-val">{diag['tumor_mean']:.4f}</span>
+    <span class="ns-row-val">{diag['tumor_mean']:.4f}</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Surrounding Tissue Brightness</div>
-      <div class="finding-explain">The average brightness of normal brain tissue surrounding the detected region. This is the baseline the algorithm compares the anomaly against. The further the anomaly is from this value, the stronger the detection signal.</div>
+      <div class="ns-row-key">Surrounding Tissue Brightness</div>
+      <div class="ns-row-explain">Average brightness of normal brain tissue around the anomaly. This is the baseline the algorithm compares against. The further the anomaly deviates from this, the stronger the detection signal.</div>
     </div>
-    <span class="finding-val">{diag['tissue_mean']:.4f}</span>
+    <span class="ns-row-val">{diag['tissue_mean']:.4f}</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Tissue Variability (Std Dev)</div>
-      <div class="finding-explain">How much brightness varies across normal brain tissue. A higher standard deviation means the brain tissue itself is more varied, making it harder to distinguish a tumor by brightness alone — this is factored into the threshold calculations.</div>
+      <div class="ns-row-key">Tissue Variability (Std Dev)</div>
+      <div class="ns-row-explain">How much brightness varies across normal brain tissue. High variability means the brain is more heterogeneous, making threshold-based detection harder.</div>
     </div>
-    <span class="finding-val">{diag['tissue_std']:.4f}</span>
+    <span class="ns-row-val">{diag['tissue_std']:.4f}</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Z-Score Brightness Cutoff</div>
-      <div class="finding-explain">Pixels with brightness at or above this value were flagged by Detector A (the Z-score method). Calculated as: mean brain brightness + {sensitivity} Z multiplier × standard deviation.</div>
+      <div class="ns-row-key">Z-Score Brightness Cutoff</div>
+      <div class="ns-row-explain">Pixels at or above this brightness were flagged by Detector A. Calculated as: mean brain brightness + Z-multiplier × standard deviation.</div>
     </div>
-    <span class="finding-val">{diag['thr_a']:.4f}</span>
+    <span class="ns-row-val">{diag['thr_a']:.4f}</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Otsu Auto-Split Threshold</div>
-      <div class="finding-explain">The brightness level automatically chosen by Detector C (Otsu's method) to split pixels into "normal" and "abnormal" groups. This threshold maximises the brightness difference between the two groups — no manual input needed.</div>
+      <div class="ns-row-key">Otsu Auto-Split Threshold</div>
+      <div class="ns-row-explain">The brightness level automatically chosen by Detector C (Otsu's method) to separate normal from abnormal pixels by maximising inter-class brightness variance.</div>
     </div>
-    <span class="finding-val">{diag['otsu_t']:.4f}</span>
+    <span class="ns-row-val">{diag['otsu_t']:.4f}</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Region Roundness (Circularity)</div>
-      <div class="finding-explain">Measures how circular the detected region is. Calculated as: 4π × area ÷ perimeter². A perfect circle scores 1.0. Brain tumors typically score 0.3–0.8. Very low scores (below 0.1) suggest a thin stripe artefact rather than a true lesion.</div>
+      <div class="ns-row-key">Region Roundness (Circularity)</div>
+      <div class="ns-row-explain">4π × area ÷ perimeter². Perfect circle = 1.0. Tumors typically score 0.3–0.8. Very low values (below 0.1) suggest a thin skull-edge artifact rather than a true lesion.</div>
     </div>
-    <span class="finding-val">{diag['circularity']:.3f}</span>
+    <span class="ns-row-val">{diag['circularity']:.3f}</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Brain Pixels Analysed</div>
-      <div class="finding-explain">Total number of pixels identified as brain tissue and included in the analysis. A larger number means more of the brain was visible and usable in this slice, giving a more reliable result.</div>
+      <div class="ns-row-key">Brain Pixels Analysed</div>
+      <div class="ns-row-explain">Total pixels identified as brain tissue and included in the analysis. More pixels = more brain visible in this slice, giving more reliable threshold estimates.</div>
     </div>
-    <span class="finding-val">{int(brain_mask.sum()):,} px</span>
+    <span class="ns-row-val">{int(brain_mask.sum()):,} px</span>
   </div>
 
-  <div class="finding-row">
+  <div class="ns-row">
     <div>
-      <div class="finding-key">Sensitivity Mode Used</div>
-      <div class="finding-explain">The detection sensitivity setting active for this scan. This controls how strict or liberal the thresholds are. Changing sensitivity and re-running can help confirm or rule out marginal findings.</div>
+      <div class="ns-row-key">Sensitivity Mode Used</div>
+      <div class="ns-row-explain">The detection sensitivity active for this scan. Changing this and re-running can help confirm marginal findings or reduce false positives.</div>
     </div>
-    <span class="finding-val">{sensitivity.upper()}</span>
+    <span class="ns-row-val">{sensitivity.upper()}</span>
   </div>
 
 </div>
 """, unsafe_allow_html=True)
 
-            # ── Recommendation ────────────────────────────────────────────
-            risk_color = {"HIGH": "red-accent", "MODERATE": "amber-accent", "LOW": "green-accent"}
+            # ── Recommendation + Disclaimer ────────────────────────────────
+            _risk_info_cls = {"HIGH": "red", "MODERATE": "amber", "LOW": ""}
             st.markdown(f"""
-<div class="info-panel {risk_color.get(risk, '')}">
-  <strong>Recommendation ({risk} Risk):</strong><br>{recommendation}
+<div class="ns-info {_risk_info_cls.get(risk, '')}">
+  <strong>Recommendation — {risk} Risk:</strong><br>{recommendation}
 </div>
-<div class="warn-panel">
-  <strong>⚠️ Important Medical Disclaimer:</strong><br>
-  This analysis is generated by a research algorithm using classical image processing methods.
-  It has <strong>not</strong> been trained on labelled medical data and has <strong>not</strong> been validated
-  for clinical use. All findings must be reviewed by a qualified radiologist or neurologist
-  before any medical decisions are made. This tool should never be used as a substitute for
-  professional medical evaluation.
+<div class="ns-info amber">
+  <strong>⚠ Medical Disclaimer:</strong>
+  This analysis uses classical image processing — it is not a trained medical AI and has not been validated for clinical use.
+  <strong>All findings must be reviewed by a qualified radiologist or neurologist before any medical decisions are made.</strong>
+  This tool must never replace professional medical evaluation.
 </div>
 """, unsafe_allow_html=True)
 
+        # ══════════════════════════════════════════════════════════════════
+        #  RESULTS — NO DETECTION
+        # ══════════════════════════════════════════════════════════════════
         else:
-            # ── No detection ──────────────────────────────────────────────
-            st.markdown('<div class="nf-section-title"><span class="red-bar"></span>Detection Result</div>',
-                        unsafe_allow_html=True)
-
             st.markdown("""
-<div class="detect-badge-wrap">
-  <span class="nf-detect-badge badge-clear">
-    <span class="pulse-dot"></span>&nbsp;No Anomaly Detected
-  </span>
+<div class="ns-section">
+  <div class="ns-section-bar"></div>
+  <h2 class="ns-section-title">Detection Result</h2>
 </div>
 """, unsafe_allow_html=True)
 
             st.markdown("""
-<div class="info-panel green-accent">
-  <strong>What this result means:</strong><br>
-  At the current sensitivity setting, no region in this scan was flagged as statistically unusual compared
-  to the surrounding brain tissue. The algorithm's three detectors did not reach the required 2-of-3 agreement
-  on any region large enough to be considered significant.<br><br>
-  <strong>This does not mean the scan is definitively clear.</strong> Subtle, very small, or diffuse lesions
-  may not be detectable by this algorithm. If you expect a lesion is present, try switching to
-  <strong>HIGH sensitivity</strong> in the sidebar and running the analysis again.
-  Also verify that the uploaded image is an axial brain MRI slice — not a scout view or localizer image.
+<div class="ns-result-row">
+  <span class="ns-detect clear"><span class="pdot"></span>No Anomaly Detected</span>
+</div>
+""", unsafe_allow_html=True)
+
+            st.markdown("""
+<div class="ns-info">
+  <strong>What this means:</strong>
+  At the current sensitivity setting, no region was flagged as statistically unusual.
+  The algorithm's 3 detectors did not reach the required 2-of-3 agreement on any region large enough to be significant.<br><br>
+  <strong>This does not mean the scan is definitively clear.</strong>
+  Subtle, very small, or diffuse lesions may not be detectable by this algorithm.
+  If you expect a lesion is present, try switching to <em>High Sensitivity</em> in the sidebar and re-running.
+  Also confirm the uploaded image is an axial brain MRI slice — not a scout, localizer, or sagittal view.
 </div>
 """, unsafe_allow_html=True)
 
             c1, c2 = st.columns(2)
             with c1:
-                st.markdown('<span class="img-label">Uploaded MRI Scan</span>', unsafe_allow_html=True)
+                st.markdown('<div class="ns-img-label">Uploaded MRI Scan</div>', unsafe_allow_html=True)
                 st.image(raw_img, use_container_width=True)
             with c2:
-                st.markdown('<span class="img-label">Brain Region Identified</span>', unsafe_allow_html=True)
-                hm = make_heatmap(gray_norm, brain_mask, None)
-                st.image(hm, use_container_width=True)
+                st.markdown('<div class="ns-img-label">Brain Region Identified</div>', unsafe_allow_html=True)
+                st.image(make_heatmap(gray_norm, brain_mask, None), use_container_width=True)
