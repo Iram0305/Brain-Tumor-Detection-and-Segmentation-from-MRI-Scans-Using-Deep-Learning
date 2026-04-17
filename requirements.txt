@@ -1,5 +1,7 @@
 streamlit
 Pillow
 numpy
-huggingface_hub
 scipy
+huggingface_hub
+matplotlib
+scikit-image
