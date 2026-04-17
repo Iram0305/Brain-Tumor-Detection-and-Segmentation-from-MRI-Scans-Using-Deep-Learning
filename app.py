@@ -558,29 +558,22 @@ def otsu_threshold_1d(values: np.ndarray) -> float:
 def detect_tumor_region(
     gray: np.ndarray,
     brain_mask: np.ndarray,
-    sensitivity: str = "balanced",  # "low" | "balanced" | "high"
+    sensitivity: str = "balanced",
 ) -> tuple:
     """
-    Ensemble detector using 3 independent signals:
-
-    Signal A — Global Z-score:
-        Pixels whose intensity is > mean + z_A * std of brain tissue.
-
-    Signal B — Local contrast:
-        Pixels whose local deviation > threshold (catches low-intensity but
-        locally bright lesions that Signal A misses).
-
-    Signal C — Otsu segmentation on brain pixels:
-        Data-driven binary split of brain intensities.
-
-    Voting: pixel is anomalous if >= 2 of 3 signals agree.
-    Then morphological cleanup + size filter + largest component.
+    Ensemble detector with Border Suppression and Geometric Blob Scoring.
     """
-    brain_px = gray[brain_mask]
+    # ── 1. Strict Border Suppression ──────────────────────────────────────
+    # Erode the outer edges of the brain mask so we completely ignore skull bleed
+    h, w = gray.shape
+    edge_margin = max(3, int(min(h, w) * 0.04))
+    strict_mask = binary_erosion(brain_mask, iterations=edge_margin)
+
+    brain_px = gray[strict_mask]
     if brain_px.size < 200:
         return None, None, {}
 
-    mu  = brain_px.mean()
+    mu = brain_px.mean()
     sig = brain_px.std()
 
     # ── Sensitivity presets ──────────────────────────────────────────────
@@ -592,47 +585,75 @@ def detect_tumor_region(
     p = presets.get(sensitivity, presets["balanced"])
 
     # ── Signal A: global Z-score ─────────────────────────────────────────
-    thr_a  = mu + p["z_a"] * sig
-    sig_a  = (gray >= thr_a) & brain_mask
+    thr_a = mu + p["z_a"] * sig
+    sig_a = (gray >= thr_a) & strict_mask
 
     # ── Signal B: local contrast ─────────────────────────────────────────
-    lc     = compute_local_contrast(gray, window=21)
-    lc_brain = lc[brain_mask]
+    lc = compute_local_contrast(gray, window=21)
+    lc_brain = lc[strict_mask]
     lc_thr = lc_brain.mean() + p["lc_z"] * lc_brain.std()
-    sig_b  = (lc >= lc_thr) & brain_mask
+    sig_b = (lc >= lc_thr) & strict_mask
 
     # ── Signal C: Otsu on brain pixels ──────────────────────────────────
-    otsu_t   = otsu_threshold_1d(brain_px)
-    sig_c    = (gray >= otsu_t) & brain_mask
+    otsu_t = otsu_threshold_1d(brain_px)
+    sig_c = (gray >= otsu_t) & strict_mask
 
     # ── Ensemble vote: 2-of-3 ────────────────────────────────────────────
-    votes  = sig_a.astype(np.uint8) + sig_b.astype(np.uint8) + sig_c.astype(np.uint8)
+    votes = sig_a.astype(np.uint8) + sig_b.astype(np.uint8) + sig_c.astype(np.uint8)
     anomaly = votes >= 2
 
     # ── Morphological cleanup ─────────────────────────────────────────────
-    anomaly = binary_erosion(anomaly,  iterations=2)
+    anomaly = binary_erosion(anomaly, iterations=2)
     anomaly = binary_dilation(anomaly, iterations=6)
     anomaly = binary_fill_holes(anomaly)
-    anomaly = anomaly & brain_mask
+    anomaly = anomaly & strict_mask
 
     # ── Remove small blobs (noise) ────────────────────────────────────────
-    brain_area = brain_mask.sum()
-    min_px     = max(30, int(brain_area * p["min_area_frac"]))
+    brain_area = strict_mask.sum()
+    min_px = max(30, int(brain_area * p["min_area_frac"]))
     labeled, n = sp_label(anomaly)
-    cleaned    = np.zeros_like(anomaly)
+    cleaned = np.zeros_like(anomaly)
     for lbl in range(1, n + 1):
         comp = labeled == lbl
         if comp.sum() >= min_px:
             cleaned |= comp
 
-    # ── Largest surviving component ───────────────────────────────────────
+    # ── Smart Blob Selection (Fixes the crescent issue) ──────────────────
     labeled2, n2 = sp_label(cleaned)
     if n2 == 0:
         return None, None, {}
 
-    sizes  = ndimage.sum(cleaned, labeled2, range(1, n2 + 1))
-    best   = int(np.argmax(sizes)) + 1
-    tumor  = (labeled2 == best)
+    best_score = -1
+    best_lbl = -1
+
+    # Score blobs based on Area, Solidity, and Aspect Ratio
+    for lbl in range(1, n2 + 1):
+        comp = (labeled2 == lbl)
+        area = comp.sum()
+
+        # Bounding box for the blob
+        rows = np.where(np.any(comp, axis=1))[0]
+        cols = np.where(np.any(comp, axis=0))[0]
+        if rows.size == 0 or cols.size == 0: continue
+
+        h_c = rows[-1] - rows[0] + 1
+        w_c = cols[-1] - cols[0] + 1
+        bbox_area = h_c * w_c
+
+        # Solidity: Area vs Bounding Box Area (1.0 = perfect rectangle/square)
+        solidity = area / (bbox_area + 1e-8)
+
+        # Aspect Ratio penalty: perfect circle/square is 1.0. Thin strip is close to 0.
+        aspect_ratio = min(h_c, w_c) / (max(h_c, w_c) + 1e-8)
+
+        # The Magic Formula: Punish long, thin objects and reward compact ones
+        score = area * (solidity ** 2) * aspect_ratio
+
+        if score > best_score:
+            best_score = score
+            best_lbl = lbl
+
+    tumor = (labeled2 == best_lbl)
 
     # ── Bounding box + padding ────────────────────────────────────────────
     rows = np.where(np.any(tumor, axis=1))[0]
@@ -640,27 +661,27 @@ def detect_tumor_region(
     if rows.size == 0 or cols.size == 0:
         return None, None, {}
 
-    H, W  = gray.shape
-    pad   = max(8, int(min(H, W) * 0.015))
-    bbox  = (
-        max(0,   cols[0]  - pad),
-        max(0,   rows[0]  - pad),
+    H, W = gray.shape
+    pad = max(8, int(min(H, W) * 0.015))
+    bbox = (
+        max(0, cols[0] - pad),
+        max(0, rows[0] - pad),
         min(W-1, cols[-1] + pad),
         min(H-1, rows[-1] + pad),
     )
 
     # ── Diagnostics dict ──────────────────────────────────────────────────
-    tumor_px   = gray[tumor]
-    tissue_px  = gray[brain_mask & ~tumor]
-    contrast   = float((tumor_px.mean() - tissue_px.mean()) / (tissue_px.std() + 1e-8))
-    area_frac  = float(tumor.sum() / (brain_area + 1e-8))
-    # Shape compactness: circularity ≈ 4π·area / perimeter²  (1=perfect circle)
+    tumor_px = gray[tumor]
+    tissue_px = gray[strict_mask & ~tumor]
+    contrast = float((tumor_px.mean() - tissue_px.mean()) / (tissue_px.std() + 1e-8))
+    area_frac = float(tumor.sum() / (brain_area + 1e-8))
+    
     from skimage.measure import perimeter as sk_perimeter
     try:
         perim = float(sk_perimeter(tumor))
-        circ  = float(4 * np.pi * tumor.sum() / (perim ** 2 + 1e-8))
+        circ = float(4 * np.pi * tumor.sum() / (perim ** 2 + 1e-8))
     except Exception:
-        circ  = 0.5
+        circ = 0.5
     circ = min(1.0, max(0.0, circ))
 
     diag = {
@@ -672,11 +693,10 @@ def detect_tumor_region(
         "tumor_mean": float(tumor_px.mean()),
         "tissue_mean": float(tissue_px.mean()),
         "tissue_std": float(tissue_px.std()),
-        "signal_votes_mean": float(votes[brain_mask].mean()),
+        "signal_votes_mean": float(votes[strict_mask].mean()),
         "lc": lc,
     }
     return bbox, tumor, diag
-
 
 def estimate_confidence(diag: dict) -> float:
     """
