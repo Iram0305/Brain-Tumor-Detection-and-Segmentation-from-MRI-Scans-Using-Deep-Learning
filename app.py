@@ -1623,4 +1623,3 @@ if uploaded_file:
                 st.markdown('<div class="ns-img-label">Brain Region Identified</div>', unsafe_allow_html=True)
                 st.image(make_heatmap(gray_norm, brain_mask, None), use_container_width=True)
 
-}
