@@ -1,5 +1,5 @@
 # NeuroScan — Brain MRI Anomaly Detection
-# UI v5.0: Cohesive Medical-Green · Netflix Energy · One Unified Design System
+# UI v5.1: Cohesive Medical-Green · Netflix Energy · Optimized Readability
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
@@ -31,7 +31,7 @@ st.set_page_config(
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800&family=Inter:wght@400;700;800&display=swap');
 
 /* ── TOKENS ── */
 :root {
@@ -245,7 +245,7 @@ html, body, [class*="css"], .stApp {
 .ns-info.red strong { color: var(--red); }
 
 /* ════════════════════════════
-   METRIC CARDS
+   METRIC CARDS — FIXED FONT FOR NUMBERS
    ════════════════════════════ */
 .ns-metric-grid {
     display: grid;
@@ -289,13 +289,13 @@ html, body, [class*="css"], .stApp {
     margin-bottom: 0.6rem;
 }
 .ns-metric-value {
-    font-family: 'Syne', sans-serif;
-    font-size: 2.4rem;
+    font-family: 'Inter', sans-serif !important; /* Cleaner number font */
+    font-size: 2.2rem;
     font-weight: 800;
     line-height: 1;
     color: var(--accent);
     margin-bottom: 0.6rem;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
 }
 .ns-metric.amber .ns-metric-value { color: var(--amber); }
 .ns-metric.red   .ns-metric-value { color: var(--red); }
@@ -705,10 +705,11 @@ section[data-testid="stSidebar"] p {
 }
 
 /* ════════════════════════════
-   HIDE STREAMLIT CHROME
+   STREAMLIT CHROME FIX
+   (Header restored to allow sidebar collapse/menu)
    ════════════════════════════ */
-#MainMenu, footer, header { visibility: hidden; }
-.block-container { padding-top: 0; max-width: 1300px; }
+footer { visibility: hidden; }
+.block-container { padding-top: 2rem; max-width: 1300px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -1621,3 +1622,5 @@ if uploaded_file:
             with c2:
                 st.markdown('<div class="ns-img-label">Brain Region Identified</div>', unsafe_allow_html=True)
                 st.image(make_heatmap(gray_norm, brain_mask, None), use_container_width=True)
+
+}
